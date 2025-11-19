@@ -5,10 +5,10 @@ A **Java-based Tower Defense game** developed as part of our Object-Oriented Pro
 This project demonstrates **core OOP concepts** such as inheritance, polymorphism, abstraction, encapsulation, interfaces, and exception handling while building a small interactive game.
 
 ---
-## 👥 Authors
+## Authors
 
-- **Abdullah Faisal** – [GitHub](https://github.com/Fe4rlessCloak)
-- **Hashaam Sargaana** – [GitHub](https://github.com/MHS)
+- **Abdullah Faisal (Fe4rlessCloak)** – [GitHub](https://github.com/Fe4rlessCloak)
+- **Hashaam Sargaana (hash-shaam)** – [GitHub](https://github.com/hash-shaam)
 
 ---
 ## Features
