@@ -24,6 +24,7 @@ public class MainThread implements Runnable{
             lag += deltaTime;
             while(lag>=TIME_PER_UPDATE){
                 lag = lag - TIME_PER_UPDATE;
+                
                 updateCounter++;
 
             }
