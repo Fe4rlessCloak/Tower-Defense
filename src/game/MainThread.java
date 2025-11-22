@@ -22,7 +22,7 @@ public class MainThread implements Runnable{
     private long timer = System.currentTimeMillis(); // Real world timer. Used to determine if a second has passed
     private int updateCounter = 0; // How many times the loop was called in the last second
 
-    private static final float TIME_PER_UPDATE_IN_NANOSECONDS = TIME_PER_UPDATE / 1_000_000_000L;
+    private static final float TIME_PER_UPDATE_IN_NANOSECONDS = (float) (TIME_PER_UPDATE / 1_000_000_000L);
     @Override
     public void run() {
 

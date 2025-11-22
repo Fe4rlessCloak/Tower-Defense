@@ -14,11 +14,14 @@ public class GameManager {
     }
 
     public void update(float deltaTime){
-        for(GameObject iterator : objectList){
-            iterator.update(deltaTime);
-            if(iterator instanceof Entity){
-                if(!((Entity)iterator).isAlive()){
-                    objectList.remove(iterator);
+        java.util.Iterator<GameObject> iterator = objectList.iterator();
+        while(iterator.hasNext()){
+            GameObject gameObject = iterator.next();
+            gameObject.update(deltaTime);
+            if (gameObject instanceof Entity) {
+                Entity entity = (Entity) gameObject;
+                if (!entity.isAlive()) {
+                    iterator.remove(); 
                 }
             }
         }
