@@ -1,4 +1,5 @@
 package game;
+
 import game.model.Entity;
 import java.util.ArrayList;
 import java.util.List;
@@ -28,4 +29,6 @@ public class GameManager {
     public List<GameObject> getGameObjects(){
         return List.copyOf(this.objectList);
     }
+
+
 }
