@@ -79,7 +79,7 @@ public class GamePanel extends JPanel implements MouseListener {
                 Barbarian barbarian = (Barbarian) obj;
                 
                 // Get the specific frame for the current action (e.g., "runForward", frame 2)
-                BufferedImage frame = assets.getBarbarianFrame(
+                BufferedImage frame = assets.getFrame("Barbarian",
                     barbarian.getCurrentAnimation(), 
                     barbarian.getCurrentFrame()
                 );

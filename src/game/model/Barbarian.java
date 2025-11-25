@@ -15,28 +15,32 @@ public class Barbarian extends Entity {
     }
 
     @Override
-    public void update(float deltaTime) {
+    public void update(float deltaTime, Assets mainAssets) {
         // 1. Move
-        this.x += this.speed * deltaTime;
-
+        this.y += this.speed * deltaTime;
+        int framesPerAnimation = mainAssets.getFrameCount("Barbarian", this.currentAnimation);
         // 2. Animate
         animationTimer += deltaTime;
         if (animationTimer >= FRAME_SPEED) {
             currentFrame++;
             // We don't know exact max frames here easily, so we rely on visual loop or Assets check
             // For now, reset every 6 frames (or whatever your max is)
-            if (currentFrame >= 6) { 
+            if (currentFrame >= framesPerAnimation) { 
                 currentFrame = 0; 
             }
             animationTimer = 0;
         }
     }
-
+    
     public String getCurrentAnimation() {
         return currentAnimation;
     }
 
     public int getCurrentFrame() {
         return currentFrame;
+    }
+
+    public void changeCurrentAnimation(String newAnimation){
+        this.currentAnimation = newAnimation;
     }
 }
