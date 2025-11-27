@@ -5,19 +5,22 @@ import java.util.ArrayList;
 import java.util.List;
 
 import game.model.GameObject;
+import game.utils.Assets;
 
 public class GameManager {
+    public Assets mainAssets;
     private List<GameObject> objectList;
 
-    GameManager(){
+    GameManager(Assets mainAssets){
         this.objectList = new ArrayList<GameObject>();
+        this.mainAssets = mainAssets;
     }
 
     public void update(float deltaTime){
         java.util.Iterator<GameObject> iterator = objectList.iterator();
         while(iterator.hasNext()){
             GameObject gameObject = iterator.next();
-            gameObject.update(deltaTime);
+            gameObject.update(deltaTime, mainAssets);
             if (gameObject instanceof Entity) {
                 Entity entity = (Entity) gameObject;
                 if (!entity.isAlive()) {

@@ -1,49 +1,53 @@
 package game;
 
+import game.ui.GamePanel;
 
-public class MainThread implements Runnable{
-    GameManager mainGame;
+public class MainThread implements Runnable {
     
-    MainThread(GameManager mainGame){
+    private GameManager mainGame;
+    private GamePanel gamePanel; // Added reference to GUI
+
+    // Constructor now accepts GamePanel
+    public MainThread(GameManager mainGame, GamePanel gamePanel){
         this.mainGame = mainGame;
-        
+        this.gamePanel = gamePanel;
     }
     
-    private static final int TARGET_UPS = 120; // Updates Per Second
-    private static final long TIME_PER_UPDATE = (1000000000)/TARGET_UPS; // Nanoseconds per update
+    private static final int TARGET_UPS = 120;
+    private static final long TIME_PER_UPDATE = 1000000000 / TARGET_UPS;
+    private static final float TIME_PER_UPDATE_IN_NANOSECONDS = (float)TIME_PER_UPDATE / 1_000_000_000f;
 
-    private long lastTime = System.nanoTime(); // Time when the last loop started
-    private float lag = 0; // Accumulates lag
-    
-    private long currentTime = 0; // Stores the current time in nanoseconds
-    private long deltaTime = 0; // Delta bw currentTime and lastTime
-
-    private long second = 0; // Maintains number of seconds for testing
-    private long timer = System.currentTimeMillis(); // Real world timer. Used to determine if a second has passed
-    private int updateCounter = 0; // How many times the loop was called in the last second
-
-    private static final float TIME_PER_UPDATE_IN_NANOSECONDS = (float) (TIME_PER_UPDATE / 1_000_000_000L);
     @Override
     public void run() {
+        long lastTime = System.nanoTime();
+        long timer = System.currentTimeMillis();
+        float lag = 0;
+        int updateCounter = 0;
 
-        while(true){
-            currentTime = System.nanoTime();
-            deltaTime = currentTime - lastTime;
-            lastTime = currentTime; 
+        while(true) {
+            long currentTime = System.nanoTime();
+            long deltaTime = currentTime - lastTime;
+            lastTime = currentTime;
             lag += deltaTime;
-            while(lag>=TIME_PER_UPDATE){
-                lag = lag - TIME_PER_UPDATE;
-                mainGame.update(TIME_PER_UPDATE_IN_NANOSECONDS);
-                updateCounter++;
 
+            // 1. Update Game Logic (Fixed Time Step)
+            while(lag >= TIME_PER_UPDATE) {
+                mainGame.update(TIME_PER_UPDATE_IN_NANOSECONDS);
+                lag -= TIME_PER_UPDATE;
+                updateCounter++;
             }
-            if(System.currentTimeMillis() - timer >= 1000){
-                System.out.println("Second: " + second + "\t" + "FPS: " + updateCounter);
+
+            // 2. Render GUI (The Integration Point)
+            if (gamePanel != null) {
+                gamePanel.repaintGame();
+            }
+
+            // FPS Counter
+            if(System.currentTimeMillis() - timer >= 1000) {
+                System.out.println("FPS: " + updateCounter);
                 updateCounter = 0;
-                second++;
                 timer = System.currentTimeMillis();
             }
         }
-        
     }
 }

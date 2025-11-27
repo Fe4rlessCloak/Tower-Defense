@@ -1,16 +1,46 @@
 package game.model;
 
-public class Barbarian extends Entity{
+import game.utils.Assets; // This import is critical!
+
+public class Barbarian extends Entity {
+
+    // Helper vars for animation
+    private String currentAnimation = Assets.ANIM_RUN_FORWARD; 
+    private int currentFrame = 0;
+    private float animationTimer = 0f;
+    private static final float FRAME_SPEED = 0.1f; // Speed of animation
 
     public Barbarian(float x, float y, int health, float speed) {
         super(x, y, health, speed);
-        
     }
 
     @Override
-    public void update(float deltaTime) {
-        this.x += this.speed * deltaTime;
+    public void update(float deltaTime, Assets mainAssets) {
+        // 1. Move
+        this.y += this.speed * deltaTime;
+        int framesPerAnimation = mainAssets.getFrameCount("Barbarian", this.currentAnimation);
+        // 2. Animate
+        animationTimer += deltaTime;
+        if (animationTimer >= FRAME_SPEED) {
+            currentFrame++;
+            // We don't know exact max frames here easily, so we rely on visual loop or Assets check
+            // For now, reset every 6 frames (or whatever your max is)
+            if (currentFrame >= framesPerAnimation) { 
+                currentFrame = 0; 
+            }
+            animationTimer = 0;
+        }
     }
     
-    
+    public String getCurrentAnimation() {
+        return currentAnimation;
+    }
+
+    public int getCurrentFrame() {
+        return currentFrame;
+    }
+
+    public void changeCurrentAnimation(String newAnimation){
+        this.currentAnimation = newAnimation;
+    }
 }
