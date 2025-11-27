@@ -4,16 +4,32 @@ import game.utils.Assets;
 
 public abstract class GameObject {
     protected float x,y;
-
-
-    GameObject(float x, float y){
+    protected final int OBJECT_SIZE = 0;
+    protected final int FRAME_OFFSET = 0; 
+    boolean isPerformingAction = false; // Default animations dont count
+    private String objectName = null;
+    GameObject(float x, float y, String objectName){
         this.x = x;
         this.y = y;
+        this.objectName = objectName;
     }
-    public abstract void update(float deltaTime, Assets mainAssets);
+    GameObject(){
+
+    }
+    
     public float getX(){return this.x;}
     public float getY(){return this.y;}
-    
-
+    public abstract void changeCurrentAnimation(String animation);
+    public void update(float deltaTime, Assets mainAssets, String action) {
+    }
+    public String getObjectName(){
+        return this.objectName;
+    };
+    public synchronized int getObjectSize(){
+        return this.OBJECT_SIZE;
+    }
+    public synchronized int getFrameOffset(){
+        return this.FRAME_OFFSET;
+    }
 
 }

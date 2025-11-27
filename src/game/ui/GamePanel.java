@@ -4,6 +4,8 @@ import game.GameManager;
 import game.model.GameObject;
 import game.model.Barbarian;
 import game.utils.Assets;
+import game.utils.Command;
+import game.utils.CommandBuffer;
 
 import javax.swing.JPanel;
 import java.awt.Dimension;
@@ -14,6 +16,7 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseEvent;
 import javax.imageio.ImageIO;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
 import java.io.IOException;
 
 public class GamePanel extends JPanel implements MouseListener {
@@ -27,9 +30,13 @@ public class GamePanel extends JPanel implements MouseListener {
     private static final int GAME_WIDTH = 500;
     private static final int GAME_HEIGHT = 693;
 
-    public GamePanel(GameManager manager) {
+    private ExecutorService producerExecutor;
+    private CommandBuffer commandBuffer;
+
+    public GamePanel(GameManager manager,ExecutorService producerExecutor,CommandBuffer commandBuffer) {
         this.gameManager = manager;
-        
+        this.producerExecutor = producerExecutor;
+        this.commandBuffer = commandBuffer;
         // 1. Initialize Screen Settings
         this.setPreferredSize(new Dimension(GAME_WIDTH, GAME_HEIGHT));
         this.setDoubleBuffered(true); // Smoother rendering
@@ -66,14 +73,21 @@ public class GamePanel extends JPanel implements MouseListener {
             g.setColor(new Color(40, 40, 40)); 
             g.fillRect(0, 0, getWidth(), getHeight());
         }
+        
 
         // --- LAYER 2: Game Objects ---
         List<GameObject> objects = gameManager.getGameObjects();
         
         for (GameObject obj : objects) {
-            int drawX = (int) obj.getX();
-            int drawY = (int) obj.getY();
+            int frameW = obj.getObjectSize();
+            int frameH = obj.getObjectSize();
 
+            int drawX = (int)(obj.getX() - frameW / 2);
+            int drawY = (int)(obj.getY() - frameH / 2);
+            g.setColor(Color.GREEN);
+            g.fillOval((int)obj.getX(), (int)obj.getY() - 4, 20, 20);
+
+            
             // Check if this object is a Barbarian to apply animation
             if (obj instanceof Barbarian) {
                 Barbarian barbarian = (Barbarian) obj;
@@ -86,7 +100,7 @@ public class GamePanel extends JPanel implements MouseListener {
 
                 if (frame != null) {
                     // Draw the sprite (Scaled to 64x64 or whatever size you prefer)
-                    g.drawImage(frame, drawX, drawY, 64, 64, null); 
+                    g.drawImage(frame, drawX, drawY, frameW, frameH, null); 
                 } else {
                     // Fallback Red Box if sprite isn't found
                     g.setColor(Color.RED);
@@ -109,7 +123,37 @@ public class GamePanel extends JPanel implements MouseListener {
     // --- Mouse Inputs (For Future Tower Placement) ---
     @Override
     public void mouseClicked(MouseEvent e) {
+        
+        List<GameObject> objects = gameManager.getGameObjects();
+        
+        GameObject closest = null;
+        double closestDist = Double.MAX_VALUE;
+
+        for(GameObject obj : objects){
+                double dx = e.getX() - obj.getX();
+                double dy = e.getY() - obj.getY();
+                double dist = Math.sqrt(dx*dx + dy*dy);
+
+                if(dist <= obj.getObjectSize()/2){
+                    if(dist < closestDist){
+                        closestDist = dist;
+                        closest = obj;
+                    }
+                }
+        }
+        if(closest!=null){
+            GameObject clicked = closest;
+            producerExecutor.submit(() -> {
+                try {
+                    commandBuffer.issueCommand(new Command(clicked.getObjectName(),"Attack"));
+                    System.out.println("Command issued by: " + clicked.getObjectName());
+                } catch (InterruptedException e1) { e1.printStackTrace(); }
+            });
+        }
+           
         System.out.println("Clicked at: " + e.getX() + ", " + e.getY());
+        
+
     }
 
     @Override

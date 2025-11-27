@@ -21,7 +21,7 @@ public class Assets {
     public Assets() {
         this.gameAssets = new HashMap<>();
         loadCharacterAssets("Barbarian");
-        loadCharacterAssets("Skeleton");
+        
     }
     private void loadCharacterAssets(String character){
         loadAnimation(character, ANIM_RUN_FORWARD, 6);
