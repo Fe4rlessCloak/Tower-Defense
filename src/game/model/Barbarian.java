@@ -12,7 +12,7 @@ public class Barbarian extends Enemy {
     public Barbarian(float x, float y, int health, float speed, String action) {
         super(x, y, health, speed, generateName());
         this.className = "Barbarian";
-        this.attackRange = 30;
+        this.attackRange = 50;
     }
     private synchronized static final String generateName(){
         String candidateName = BARBARIAN_CLASS_NAME + objectID;

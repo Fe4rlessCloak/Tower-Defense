@@ -3,7 +3,6 @@ package game.ui;
 import game.GameManager;
 import game.model.GameObject;
 import game.model.Player;
-import game.model.Barbarian;
 import game.model.Enemy;
 import game.utils.Assets;
 import game.utils.Command;

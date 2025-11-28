@@ -14,7 +14,6 @@ import java.util.Map;
 
 import game.model.GameObject;
 import game.model.Player;
-import game.model.Tower;
 import game.utils.Assets;
 import game.utils.Command;
 import game.utils.CommandBuffer;
@@ -63,14 +62,13 @@ public class GameManager {
             } else {
                 gameObject.update(deltaTime, mainAssets, null);
             }
-            if(gameObject instanceof Enemy enemy){
+            if(gameObject instanceof Enemy enemy){ 
                 
                 Player newTarget = null;
                 if(!enemy.hasValidTarget()){   
                     newTarget = findClosestPlayer(enemy);
                 }
                 if (newTarget != null) {
-                    // 3. Invoke the change method
                     enemy.setFinalTarget(newTarget); 
                 }
             }

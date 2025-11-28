@@ -29,6 +29,7 @@ public class Assets {
             case "Barbarian" -> {
                 loadAnimation(character, ANIM_RUN_FORWARD, 6);
                 loadAnimation(character, ANIM_ATTACK_FORWARD, 7);
+                loadAnimation(character, ANIM_IDLE, 1);
             }
             case "Tower" -> {
                 loadAnimation(character, ANIM_IDLE, 1);

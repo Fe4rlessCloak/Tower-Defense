@@ -5,10 +5,10 @@ import game.utils.Assets;
 public abstract class Entity extends GameObject {
     protected int health;
     protected float speed;
-    private final int OBJECT_SIZE = 96;
+    private final int OBJECT_SIZE = 128;
     final int FRAME_OFFSET = OBJECT_SIZE / 4; 
 
-    protected  String currentAnimation = Assets.ANIM_RUN_FORWARD; 
+    protected String currentAnimation = Assets.ANIM_RUN_FORWARD; 
     protected String defaultAnimation = Assets.ANIM_RUN_FORWARD;
     protected int currentFrame = 0;
     protected float animationTimer = 0f;
@@ -26,6 +26,7 @@ public abstract class Entity extends GameObject {
     }
     public void takeDamage(int damage){
         this.health = this.health - damage;
+        System.out.println("Current Health:" + this.health);
     }
     public boolean isAlive(){
         return health>0;
@@ -47,6 +48,9 @@ public abstract class Entity extends GameObject {
 
     public String getClassName(){
         return className;
+    }
+    public int getHealth(){
+        return this.health;
     }
     @Override
     public void update(float deltaTime, Assets mainAssets, String action) {
