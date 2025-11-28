@@ -1,7 +1,7 @@
 package game.model;
 
 import game.utils.Assets; // This import is critical!
-import game.utils.Command;
+
 
 public class Barbarian extends Entity {
 
@@ -16,7 +16,7 @@ public class Barbarian extends Entity {
     public Barbarian(float x, float y, int health, float speed, String action) {
         super(x, y, health, speed, generateName());
     }
-    private static final String generateName(){
+    private synchronized static final String generateName(){
         String candidateName = className + objectID;
         objectID++;
         return candidateName;

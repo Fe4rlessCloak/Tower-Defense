@@ -84,9 +84,7 @@ public class GamePanel extends JPanel implements MouseListener {
 
             int drawX = (int)(obj.getX() - frameW / 2);
             int drawY = (int)(obj.getY() - frameH / 2);
-            g.setColor(Color.GREEN);
-            g.fillOval((int)obj.getX(), (int)obj.getY() - 4, 20, 20);
-
+            
             
             // Check if this object is a Barbarian to apply animation
             if (obj instanceof Barbarian) {
