@@ -1,10 +1,21 @@
 package game.model;
 
+import game.utils.Assets;
+
 public abstract class Entity extends GameObject {
     protected int health;
     protected float speed;
     private final int OBJECT_SIZE = 96;
     final int FRAME_OFFSET = OBJECT_SIZE / 4; 
+
+    protected  String currentAnimation = Assets.ANIM_RUN_FORWARD; 
+    protected String defaultAnimation = Assets.ANIM_RUN_FORWARD;
+    protected int currentFrame = 0;
+    protected float animationTimer = 0f;
+    protected static final float FRAME_SPEED = 0.1f; // Speed of animation
+
+    protected String className;
+
     Entity(float x, float y, int health, float speed, String objectName){
         super(x, y, objectName);
         this.health = health;
@@ -25,5 +36,37 @@ public abstract class Entity extends GameObject {
     public int getFrameOffset(){
         return this.FRAME_OFFSET;
     }
-    
+
+    public synchronized String getCurrentAnimation() {
+        return currentAnimation;
+    }
+
+    public synchronized int getCurrentFrame() {
+        return currentFrame;
+    }
+
+    public String getClassName(){
+        return className;
+    }
+    @Override
+    public void update(float deltaTime, Assets mainAssets, String action) {
+        // 1. Move
+        int framesPerAnimation = mainAssets.getFrameCount(getClassName(), this.currentAnimation);
+        // 2. Animate
+        animationTimer += deltaTime;
+        if (animationTimer >= FRAME_SPEED) {
+            this.currentFrame++;
+            if (currentFrame >= framesPerAnimation) { 
+                currentFrame = 0; 
+                isPerformingAction = false;
+                this.currentAnimation = defaultAnimation;
+            }
+            animationTimer = 0;
+        }
+        if (!isPerformingAction && action != null && action.equals("Attack")) {
+            currentFrame = 0;
+            isPerformingAction = true;
+            changeCurrentAnimation(Assets.ANIM_ATTACK_FORWARD); 
+         }
+    }
 }

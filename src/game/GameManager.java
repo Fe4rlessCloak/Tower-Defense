@@ -2,6 +2,7 @@ package game;
 
 
 import game.model.Barbarian;
+import game.model.Enemy;
 import game.model.Entity;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -12,6 +13,8 @@ import java.util.Map;
 
 
 import game.model.GameObject;
+import game.model.Player;
+import game.model.Tower;
 import game.utils.Assets;
 import game.utils.Command;
 import game.utils.CommandBuffer;
@@ -60,13 +63,25 @@ public class GameManager {
             } else {
                 gameObject.update(deltaTime, mainAssets, null);
             }
+            if(gameObject instanceof Enemy enemy){
                 
+                Player newTarget = null;
+                if(!enemy.hasValidTarget()){   
+                    newTarget = findClosestPlayer(enemy);
+                }
+                if (newTarget != null) {
+                    // 3. Invoke the change method
+                    enemy.setFinalTarget(newTarget); 
+                }
+            }
             if (gameObject instanceof Entity) {
                 Entity entity = (Entity) gameObject;
                 if (!entity.isAlive()) {
                     iterator.remove(); 
                 }
             }
+            
+            
         }
         if(!pendingObjects.isEmpty()){
             objectList.addAll(pendingObjects);
@@ -91,5 +106,23 @@ public class GameManager {
         }
         
     }
+    public Player findClosestPlayer(Enemy enemy){
+        java.util.Iterator<GameObject> iterator = objectList.iterator();
+        Player minimumPlayer = null;
+        float minimumDistance = Float.MAX_VALUE;
+        while(iterator.hasNext()){
+            GameObject gameObject = iterator.next(); 
+            if(gameObject instanceof Player){
+                float dx = gameObject.getX() - enemy.getX();
+                float dy = gameObject.getY() - enemy.getY();
+                float dist = (float)Math.hypot(dx, dy);
+                if(dist<minimumDistance){
+                    minimumDistance = dist;
+                    minimumPlayer = (Player) gameObject;
+                }
+            }
 
+        }
+        return minimumPlayer;
+    }
 }
