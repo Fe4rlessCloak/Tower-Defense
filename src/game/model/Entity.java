@@ -1,7 +1,5 @@
 package game.model;
 
-import game.utils.Assets;
-
 public abstract class Entity extends GameObject {
     protected int health;
     protected float speed;

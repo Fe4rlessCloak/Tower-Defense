@@ -15,9 +15,12 @@ import java.awt.image.BufferedImage;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseEvent;
 import javax.imageio.ImageIO;
+
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
-import java.io.IOException;
+
 
 public class GamePanel extends JPanel implements MouseListener {
     
@@ -142,11 +145,22 @@ public class GamePanel extends JPanel implements MouseListener {
         if(closest!=null){
             GameObject clicked = closest;
             producerExecutor.submit(() -> {
-                try {
-                    commandBuffer.issueCommand(new Command(clicked.getObjectName(),"Attack"));
-                    System.out.println("Command issued by: " + clicked.getObjectName());
-                } catch (InterruptedException e1) { e1.printStackTrace(); }
+                
+                // try {
+                //     commandBuffer.issueCommand(new Command(clicked.getObjectName(),"Attack", null));
+                //     System.out.println("Command issued by: " + clicked.getObjectName());
+                // } catch (InterruptedException e1) { e1.printStackTrace(); }
             });
+        }else{
+            producerExecutor.submit(() -> {
+                Map<String, String> spawnAttrs = new HashMap<>();
+                spawnAttrs.put("x", String.valueOf(e.getX())); // Coordinates
+                spawnAttrs.put("y", String.valueOf(e.getY()));
+                try{
+                    commandBuffer.issueCommand(new Command("GameManager","SpawnBarbarian",spawnAttrs));
+                }catch (InterruptedException el) {el.printStackTrace();}
+            });
+
         }
            
         System.out.println("Clicked at: " + e.getX() + ", " + e.getY());

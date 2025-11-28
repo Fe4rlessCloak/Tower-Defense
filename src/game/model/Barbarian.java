@@ -27,7 +27,7 @@ public class Barbarian extends Entity {
     @Override
     public void update(float deltaTime, Assets mainAssets, String action) {
         // 1. Move
-    
+        
         this.y += this.speed * deltaTime;
         int framesPerAnimation = mainAssets.getFrameCount("Barbarian", this.currentAnimation);
         // 2. Animate

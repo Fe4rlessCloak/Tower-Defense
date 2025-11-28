@@ -1,12 +1,13 @@
 package game;
 
 
+import game.model.Barbarian;
 import game.model.Entity;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
+
 
 
 
@@ -18,33 +19,42 @@ import game.utils.CommandBuffer;
 public class GameManager {
     public Assets mainAssets;
     private List<GameObject> objectList;
-    
+    private List<GameObject> pendingObjects;
     private CommandBuffer commandBuffer;
     
     GameManager(Assets mainAssets, CommandBuffer commandBuffer ){
         this.objectList = new ArrayList<GameObject>();
         this.commandBuffer = commandBuffer;
         this.mainAssets = mainAssets;
+        this.pendingObjects = new ArrayList<>();
     }
 
     public void update(float deltaTime){
-        java.util.Iterator<GameObject> iterator = objectList.iterator();
+        java.util.Iterator<GameObject> iterator = objectList.iterator(); 
 
-        List<Command> pendingCommands = new ArrayList<>();
-        commandBuffer.drainTo(pendingCommands);
+        List<Command> pendingCommands = new ArrayList<>(); // A command is represented as: Target, Action, Attributes
+        commandBuffer.drainTo(pendingCommands); // Drains the commandBuffer (containing commands) to an Array-List each tick
 
         
-        Map<String, String> commandMap = new HashMap<>();
+        Map<String, Command> commandMap = new HashMap<>(); // Creates a hashmap
         for (Command c : pendingCommands) {
-            commandMap.put(c.getTarget(), c.getAction());
+            commandMap.put(c.getTarget(), c); // The hashmap maps Name -> Command (Target, Action, Attributes)
         }
 
-        
-            
+        Command systemAction = commandMap.get("GameManager"); // If any command in the map is intended for the GameManager
+
+        if (systemAction != null) {
+            this.handleSystemAction(systemAction);  // Assuming we have a command for the GameManager, it forwards it
+            commandMap.remove("GameManager"); // Remove the GameManager/System-intended command, so it doesn't try to update a GameObject
+        }
         while(iterator.hasNext()){
-            
             GameObject gameObject = iterator.next();
-            String action = commandMap.get(gameObject.getObjectName());
+            Command currentCommand = commandMap.get(gameObject.getObjectName()); // Fetches Entity related commands for the current entity
+            String action = null; // Fetches the specific action from the command object (Target, Action, Attributes)
+
+            if(currentCommand!=null){ // Determines if there's a command enqueued for the current entity
+                action = currentCommand.getAction(); // Fetches that command action (String)
+            }
             if(action!=null){
                 gameObject.update(deltaTime, mainAssets, action);
             } else {
@@ -58,13 +68,28 @@ public class GameManager {
                 }
             }
         }
+        if(!pendingObjects.isEmpty()){
+            objectList.addAll(pendingObjects);
+            pendingObjects.clear();
+        }
     }
     public void spawnObject(GameObject toAdd){
-        objectList.add(toAdd);
+        pendingObjects.add(toAdd); // We add new objects to a pending list, which is dumped into the actual game object list in the next tick.
     }
     public List<GameObject> getGameObjects(){
         return List.copyOf(this.objectList);
     }
-    
+    private void handleSystemAction(Command systemAction){
+        switch (systemAction.getAction()){
+            case "SpawnBarbarian" -> {
+                float xValue = Float.parseFloat(systemAction.getAttribute("x"));
+                float yValue = Float.parseFloat(systemAction.getAttribute("y"));
+                spawnObject(new Barbarian(xValue,yValue, 100, 50f, null));
+                System.out.println("Barbarian Created");
+               
+            }
+        }
+        
+    }
 
 }
