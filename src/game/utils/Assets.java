@@ -1,7 +1,7 @@
 package game.utils;
 
 import java.awt.image.BufferedImage;
-import java.io.IOException;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -21,7 +21,7 @@ public class Assets {
     public Assets() {
         this.gameAssets = new HashMap<>();
         loadCharacterAssets("Barbarian");
-        loadCharacterAssets("Skeleton");
+        
     }
     private void loadCharacterAssets(String character){
         loadAnimation(character, ANIM_RUN_FORWARD, 6);
