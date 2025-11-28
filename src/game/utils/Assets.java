@@ -16,16 +16,28 @@ public class Assets {
     // Constants matching your folder structure
     public static final String ANIM_RUN_FORWARD = "runForward";
     public static final String ANIM_ATTACK_FORWARD = "attackForward";
+    public static final String ANIM_IDLE = "Idle";
     // Add others later: "attackForward", "runLeft", etc.
     
     public Assets() {
         this.gameAssets = new HashMap<>();
         loadCharacterAssets("Barbarian");
-        
+        loadCharacterAssets("Tower");
     }
     private void loadCharacterAssets(String character){
-        loadAnimation(character, ANIM_RUN_FORWARD, 6);
-        loadAnimation(character, ANIM_ATTACK_FORWARD, 7);
+        switch(character){
+            case "Barbarian" -> {
+                loadAnimation(character, ANIM_RUN_FORWARD, 6);
+                loadAnimation(character, ANIM_ATTACK_FORWARD, 7);
+                loadAnimation(character, ANIM_IDLE, 1);
+            }
+            case "Tower" -> {
+                loadAnimation(character, ANIM_IDLE, 1);
+            }
+            default -> System.err.println("Warning: Attempted to load unknown character type: " + character);
+        }
+        
+        
     }
   
     private void loadAnimation(String character, String animationName, int frameCount){
@@ -73,6 +85,7 @@ public class Assets {
     
     public BufferedImage getFrame(String characterName, String animationName, int frameIndex) {
         Map<String, List<BufferedImage>> characterMap = gameAssets.get(characterName);
+
         List<BufferedImage> frames = characterMap.get(animationName);
         if (frames != null && !frames.isEmpty()) {
             // Safety check: ensure index is within bounds

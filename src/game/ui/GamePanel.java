@@ -2,7 +2,8 @@ package game.ui;
 
 import game.GameManager;
 import game.model.GameObject;
-import game.model.Barbarian;
+import game.model.Player;
+import game.model.Enemy;
 import game.utils.Assets;
 import game.utils.Command;
 import game.utils.CommandBuffer;
@@ -90,13 +91,13 @@ public class GamePanel extends JPanel implements MouseListener {
             
             
             // Check if this object is a Barbarian to apply animation
-            if (obj instanceof Barbarian) {
-                Barbarian barbarian = (Barbarian) obj;
+            if (obj instanceof Enemy) {
+                Enemy enemy = (Enemy) obj;
                 
                 // Get the specific frame for the current action (e.g., "runForward", frame 2)
-                BufferedImage frame = assets.getFrame("Barbarian",
-                    barbarian.getCurrentAnimation(), 
-                    barbarian.getCurrentFrame()
+                BufferedImage frame = assets.getFrame(enemy.getClassName(),
+                    enemy.getCurrentAnimation(), 
+                    enemy.getCurrentFrame()
                 );
 
                 if (frame != null) {
@@ -108,10 +109,21 @@ public class GamePanel extends JPanel implements MouseListener {
                     g.fillRect(drawX, drawY, 64, 64);
                 }
             } 
-            else {
+            else if(obj instanceof Player){
+                Player player = (Player) obj;
                 // Default drawing for non-animated objects (e.g., Towers later)
-                g.setColor(Color.WHITE);
-                g.fillRect(drawX, drawY, 32, 32);
+                BufferedImage frame = assets.getFrame(player.getClassName(),
+                    player.getCurrentAnimation(), 
+                    player.getCurrentFrame()
+                );
+                if (frame != null) {
+                    // Draw the sprite (Scaled to 64x64 or whatever size you prefer)
+                    g.drawImage(frame, drawX, drawY, frameW, frameH, null); 
+                } else {
+                    // Fallback Red Box if sprite isn't found
+                    g.setColor(Color.RED);
+                    g.fillRect(drawX, drawY, 64, 64);
+                }
             }
         }
     }
@@ -143,7 +155,7 @@ public class GamePanel extends JPanel implements MouseListener {
                 }
         }
         if(closest!=null){
-            GameObject clicked = closest;
+            // GameObject clicked = closest;
             producerExecutor.submit(() -> {
                 
                 // try {

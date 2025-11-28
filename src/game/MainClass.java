@@ -1,7 +1,9 @@
 package game;
 
 import game.model.Barbarian;
+import game.model.Entity;
 import game.model.GameObject;
+import game.model.Tower;
 import game.ui.GameFrame;
 import game.ui.GamePanel;
 import game.utils.Assets;
@@ -28,11 +30,12 @@ public class MainClass {
         GameManager mainGame = new GameManager(mainAssets,commandBuffer);
         
         // 2. Spawn a Test Object (Barbarian at 50,200 with 100HP and speed 100)
-        GameObject barbarian = new Barbarian(50f, 200f, 100, 50f, null);
-        GameObject barbarian2 = new Barbarian(100, 230f, 100, 50f, null);
+        GameObject barbarian = new Barbarian(90f, 100f, 100, 50f, null);
+        GameObject tower = new Tower(90f, 350f, 200, 50f);
+        Tower tower2 = new Tower(245f, 650f, 200, 50f);
         mainGame.spawnObject(barbarian);
-        mainGame.spawnObject(barbarian2);
-        
+        mainGame.spawnObject(tower);
+        mainGame.spawnObject(tower2);
         // 3. Start GUI on Event Dispatch Thread
          
         SwingUtilities.invokeLater(() -> {

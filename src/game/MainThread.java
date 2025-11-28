@@ -13,7 +13,7 @@ public class MainThread implements Runnable {
         this.gamePanel = gamePanel;
     }
     
-    private static final int TARGET_UPS = 120;
+    private static final int TARGET_UPS = 30;
     private static final long TIME_PER_UPDATE = 1000000000 / TARGET_UPS;
     private static final float TIME_PER_UPDATE_IN_NANOSECONDS = (float)TIME_PER_UPDATE / 1_000_000_000f;
 
