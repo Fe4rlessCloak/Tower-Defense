@@ -5,11 +5,11 @@ import game.utils.Assets;
 public abstract class Entity extends GameObject {
     protected int health;
     protected float speed;
-    private final int OBJECT_SIZE = 128;
+    private final int OBJECT_SIZE = 96;
     final int FRAME_OFFSET = OBJECT_SIZE / 4; 
 
-    protected String currentAnimation = Assets.ANIM_RUN_FORWARD; 
-    protected String defaultAnimation = Assets.ANIM_RUN_FORWARD;
+    protected String currentAnimation = Assets.ANIM_RUN_DOWNWARD; 
+    protected String defaultAnimation = Assets.ANIM_RUN_DOWNWARD;
     protected int currentFrame = 0;
     protected float animationTimer = 0f;
     protected static final float FRAME_SPEED = 0.1f; // Speed of animation
@@ -67,10 +67,10 @@ public abstract class Entity extends GameObject {
             }
             animationTimer = 0;
         }
-        if (!isPerformingAction && action != null && action.equals("Attack")) {
-            currentFrame = 0;
-            isPerformingAction = true;
-            changeCurrentAnimation(Assets.ANIM_ATTACK_FORWARD); 
-         }
+        // if (!isPerformingAction && action != null && action.equals("Attack")) {
+        //     currentFrame = 0;
+        //     isPerformingAction = true;
+        //     changeCurrentAnimation(Assets.ANIM_ATTACK_DOWNWARD); 
+        //  }
     }
 }
