@@ -109,7 +109,11 @@ public abstract class Enemy extends Entity {
         
     }
     public void changeCurrentAnimation(String newAnimation){   
+        if(this.currentAnimation.equals(newAnimation)){
+            return;
+        }
         this.currentAnimation = newAnimation;
+        this.currentFrame = 0;
     }
     public int getAttackRange(){
         return this.attackRange;
