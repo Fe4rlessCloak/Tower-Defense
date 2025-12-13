@@ -17,7 +17,7 @@ public class DarkKnight extends Enemy {
     public DarkKnight(float x, float y) {
         super(x, y);
         this.className = "DarkKnight";
-        this.attackRange = 90;
+        this.attackRange = 70;
         ATTACK_RATE_DURATION = 2f;
         this.playerDetectionRadius = 100;
     }

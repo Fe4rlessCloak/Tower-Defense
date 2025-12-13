@@ -85,8 +85,17 @@ public class GamePanel extends JPanel implements MouseListener {
 
         // --- LAYER 2: Game Objects ---
         List<GameObject> objects = gameManager.getGameObjects();
-        
-        for (GameObject obj : objects) {
+        List<GameObject> sortedObjects = new java.util.ArrayList<>(objects);
+         sortedObjects.sort((a, b) -> {
+            // Compare Y-coordinates for depth sorting
+            // a.getY() - b.getY() sorts ascending (smallest Y first)
+            // This ensures objects at the bottom (larger Y) are drawn last.
+                return Float.compare(a.getY(), b.getY());
+            });
+        for (GameObject obj : sortedObjects) {
+
+           
+
             int frameW = obj.getObjectSize();
             int frameH = obj.getObjectSize();
 
