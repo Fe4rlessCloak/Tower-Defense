@@ -85,6 +85,7 @@ public class Assets {
                 loadAnimation(character, ANIM_IDLE_TOP_RIGHT, 1);
             }
             case "Tower" -> {
+                
                 loadAnimation(character, ANIM_ATTACK_LEFT, 5);
                 loadAnimation(character, ANIM_ATTACK_RIGHT, 5);
                 loadAnimation(character, ANIM_ATTACK_TOP, 5);

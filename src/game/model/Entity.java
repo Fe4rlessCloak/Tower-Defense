@@ -5,8 +5,8 @@ import game.utils.Assets;
 public abstract class Entity extends GameObject {
     protected int health;
     protected float speed;
-    private final int OBJECT_SIZE = 96;
-    final int FRAME_OFFSET = OBJECT_SIZE / 4; 
+    protected int OBJECT_SIZE = 96;
+    protected int FRAME_OFFSET = OBJECT_SIZE / 4; 
 
     protected String currentAnimation = Assets.ANIM_RUN_DOWNWARD; 
     protected String defaultAnimation = Assets.ANIM_RUN_DOWNWARD;
@@ -16,8 +16,8 @@ public abstract class Entity extends GameObject {
 
     protected String className;
 
-    Entity(float x, float y, int health, float speed, String objectName){
-        super(x, y, objectName);
+    Entity(float x, float y){
+        super(x, y);
         this.health = health;
         this.speed = speed;
     }

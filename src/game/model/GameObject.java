@@ -7,11 +7,10 @@ public abstract class GameObject {
     protected final int OBJECT_SIZE = 0;
     protected final int FRAME_OFFSET = 0; 
     boolean isPerformingAction = false; // Default animations dont count
-    private String objectName = null;
-    GameObject(float x, float y, String objectName){
+    protected String objectName = null;
+    GameObject(float x, float y){
         this.x = x;
         this.y = y;
-        this.objectName = objectName;
     }
     GameObject(){
 

@@ -7,13 +7,20 @@ public class Tower extends Player{
     
     private static final String TOWER_CLASS_NAME = "Tower";
 
+    {
+        speed = 0F;
+        health = 500;
+        objectName = generateName();
+    }
     
 
-    public Tower(float x, float y, int health, float speed ){
-        super(x, y, health, 0F, generateName());
+    public Tower(float x, float y ){
+        super(x, y);
         this.className = "Tower";
-        this.currentAnimation = Assets.ANIM_IDLE;
-        this.playerDetectionRadius = 60;
+        this.currentAnimation = Assets.ANIM_IDLE_TOP;
+        this.OBJECT_SIZE = 192;
+        this.attackRange = 300;
+
     }
     private synchronized static final String generateName(){
         String candidateName = TOWER_CLASS_NAME + objectID;
@@ -23,15 +30,6 @@ public class Tower extends Player{
     @Override
     public void update(float deltaTime, Assets mainAssets, String action) {
         super.update(deltaTime, mainAssets, action);
-        int framesPerAnimation = mainAssets.getFrameCount(getClassName(), this.currentAnimation);
-        // 2. Animate
-        animationTimer += deltaTime;
-        if (animationTimer >= FRAME_SPEED) {
-            currentFrame++;
-            if (currentFrame >= framesPerAnimation) { 
-                currentFrame = 0; 
-            }
-            animationTimer = 0;
-        }
+        
     }
 }

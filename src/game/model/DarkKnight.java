@@ -8,11 +8,16 @@ public class DarkKnight extends Enemy {
     // Helper vars for animation
     private static final String DARKKNIGHT_CLASS_NAME = "DarkKnight"; // Dont bother with this. Its only to fix java's inherent problemss
     private static int objectID = 1;
+    {
+        health = 100;
+        speed = 30F;
+        objectName = generateName();
+    }
     
-    public DarkKnight(float x, float y, int health, float speed, String action) {
-        super(x, y, health, speed, generateName());
+    public DarkKnight(float x, float y) {
+        super(x, y);
         this.className = "DarkKnight";
-        this.attackRange = 65;
+        this.attackRange = 90;
         ATTACK_RATE_DURATION = 2f;
         this.playerDetectionRadius = 100;
     }

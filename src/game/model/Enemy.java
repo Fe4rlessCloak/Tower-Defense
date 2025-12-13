@@ -19,8 +19,8 @@ public abstract class Enemy extends Entity {
     protected float ATTACK_RATE_DURATION = 1.25f; 
     protected String lastDirectionalAnimation = Assets.ANIM_RUN_DOWNWARD;
 
-    public Enemy(float x, float y, int health, float speed, String name) {
-        super(x, y, health, speed, name);
+    public Enemy(float x, float y) {
+        super(x, y);
         this.finalTarget = null;
         
         this.path = new ArrayList<>();
@@ -34,17 +34,16 @@ public abstract class Enemy extends Entity {
     public void update(float deltaTime, Assets mainAssets, String action) {
         super.update(deltaTime, mainAssets, action);
        
-        if (this.finalTarget != null) {
+        if (this.finalTarget != null) { // Enemy changes target to NULL if the current target is dead
             if(!this.finalTarget.isAlive()){
                 this.resetTargetPlayer();
                 this.attackCooldownTimer = 0.0f;
             }else{
-                setFinalTarget(this.finalTarget);
+                this.setFinalTarget(finalTarget); // Important: This updates the path every tick
             }
-            
         }
 
-        if (this.finalTarget == null || this.path.isEmpty()) {
+        if (this.finalTarget == null || this.path.isEmpty()) { // If there is no target, the enemy will idle
             String idleAnimation = getIdleAnimation();
             this.changeCurrentAnimation(idleAnimation);
             this.attackCooldownTimer = 0.0f;
@@ -57,21 +56,24 @@ public abstract class Enemy extends Entity {
         float dx = target.x - this.x;
         float dy = target.y - this.y;
         float dist = (float)Math.hypot(dx, dy);
-        if (attackCooldownTimer > 0) {
+
+
+
+
+        if (attackCooldownTimer > 0) { 
             String idleAnimation = getIdleAnimation();
             this.changeCurrentAnimation(idleAnimation);
             attackCooldownTimer -= deltaTime;
         }
         
-        
-        if (dist<this.attackRange && attackCooldownTimer <= 0) {
-            if (!this.currentAnimation.startsWith("attack")) {
+        if (dist<this.attackRange && attackCooldownTimer <= 0) { // If enemy is within range and there's no cooldown
+            if (!this.currentAnimation.startsWith("attack")) { // If the enemy has not attacked yet
                 this.resetCooldown();
                 String attackAnim = determineAttackAnimation(dx, dy);
                 changeCurrentAnimation(attackAnim);
                 lastDirectionalAnimation = attackAnim;
             }
-            if (this.currentAnimation.startsWith("attack") && this.currentFrame == 8) {
+            if (this.currentAnimation.startsWith("attack") && this.currentFrame == 8) { // If the enemy is attacking, and hits frame 8
                 System.out.println("BARBARIAN HIT FRAME 8: Target: " + this.finalTarget.getObjectName() + 
                             " | Health BEFORE: " + this.finalTarget.getHealth());
                 this.finalTarget.takeDamage(50);
@@ -79,7 +81,7 @@ public abstract class Enemy extends Entity {
                 System.out.println("BARBARIAN HIT FRAME 8: Health AFTER: " + this.finalTarget.getHealth());
             }   
             
-        }else if(dist >= this.attackRange){
+        }else if(dist >= this.attackRange){ // The enemy is not within range
             this.resetCooldown();
             String runAnim = determineRunAnimation(dx, dy);
             this.lastDirectionalAnimation = runAnim;
@@ -97,7 +99,7 @@ public abstract class Enemy extends Entity {
     public void setFinalTarget(Player target){
         
         if (target != null) {
-            if(target instanceof Tower){
+            if(target instanceof Player){
                 this.isTargetingPlayer = false; 
             }else{
                 this.isTargetingPlayer = true;
@@ -194,35 +196,35 @@ public abstract class Enemy extends Entity {
     }
     // Inside the Enemy.java class
 
-private String determineAttackAnimation(float dx, float dy) {
-    // Math.atan2 returns the angle in radians
-    double angleRad = Math.atan2(dy, dx);
-    
-    // Convert angle to degrees (0 to 360) and normalize it.
-    double angleDeg = Math.toDegrees(angleRad);
-    if (angleDeg < 0) {
-        angleDeg += 360; 
-    }
-    
-    // --- Mapping Angles to 8 Directions (Same as run, but returns ATTACK IDs) ---
-    
-    if (angleDeg >= 337.5 || angleDeg < 22.5) {
-        return Assets.ANIM_ATTACK_LEFT; 
-    } else if (angleDeg >= 22.5 && angleDeg < 67.5) {
-        return Assets.ANIM_ATTACK_DOWN_LEFT; 
-    } else if (angleDeg >= 67.5 && angleDeg < 112.5) {
-        return Assets.ANIM_ATTACK_DOWNWARD; 
-    } else if (angleDeg >= 112.5 && angleDeg < 157.5) {
-        return Assets.ANIM_ATTACK_DOWN_RIGHT; 
-    } else if (angleDeg >= 157.5 && angleDeg < 202.5) {
-        return Assets.ANIM_ATTACK_RIGHT; 
-    } else if (angleDeg >= 202.5 && angleDeg < 247.5) {
-        return Assets.ANIM_ATTACK_TOP_RIGHT; // Assuming UP is TOP
-    } else if (angleDeg >= 247.5 && angleDeg < 292.5) {
-        return Assets.ANIM_ATTACK_TOP;       // Assuming UP is TOP
-    } else { // 292.5 to 337.5
-        return Assets.ANIM_ATTACK_TOP_LEFT; // Assuming UP is TOP
-    }
+    private String determineAttackAnimation(float dx, float dy) {
+        // Math.atan2 returns the angle in radians
+        double angleRad = Math.atan2(dy, dx);
+        
+        // Convert angle to degrees (0 to 360) and normalize it.
+        double angleDeg = Math.toDegrees(angleRad);
+        if (angleDeg < 0) {
+            angleDeg += 360; 
+        }
+        
+        // --- Mapping Angles to 8 Directions (Same as run, but returns ATTACK IDs) ---
+        
+        if (angleDeg >= 337.5 || angleDeg < 22.5) {
+            return Assets.ANIM_ATTACK_LEFT; 
+        } else if (angleDeg >= 22.5 && angleDeg < 67.5) {
+            return Assets.ANIM_ATTACK_DOWN_LEFT; 
+        } else if (angleDeg >= 67.5 && angleDeg < 112.5) {
+            return Assets.ANIM_ATTACK_DOWNWARD; 
+        } else if (angleDeg >= 112.5 && angleDeg < 157.5) {
+            return Assets.ANIM_ATTACK_DOWN_RIGHT; 
+        } else if (angleDeg >= 157.5 && angleDeg < 202.5) {
+            return Assets.ANIM_ATTACK_RIGHT; 
+        } else if (angleDeg >= 202.5 && angleDeg < 247.5) {
+            return Assets.ANIM_ATTACK_TOP_RIGHT; // Assuming UP is TOP
+        } else if (angleDeg >= 247.5 && angleDeg < 292.5) {
+            return Assets.ANIM_ATTACK_TOP;       // Assuming UP is TOP
+        } else { // 292.5 to 337.5
+            return Assets.ANIM_ATTACK_TOP_LEFT; // Assuming UP is TOP
+        }
     }
     private String getIdleAnimation() { // No longer needs a parameter
         String currentAnim = this.lastDirectionalAnimation; // Use the stored variable

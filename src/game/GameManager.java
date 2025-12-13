@@ -64,11 +64,9 @@ public class GameManager {
                         }else{
                             enemy.setIsTargetingPlayer(true);
                         }
-                        enemy.setFinalTarget(newTarget);
-                        System.out.println(enemy.getFinalTarget().getClassName());
+                        enemy.setFinalTarget(newTarget);  
                     }
-                    
-                }else if(enemy.isTargetingPlayer()){
+                }else if(enemy.isTargetingPlayer()){ // Even though the Game Manager is not supposed to micro-manage Enemy's state, here we need a check to see if the enemy should target a Tower or a non-Tower (and get that tower as well)
                     Player currentTarget = enemy.getFinalTarget();
                     // Check to see if the current target (non-tower) has gone out of range
                     if (currentTarget != null) {
@@ -78,9 +76,19 @@ public class GameManager {
                         if (dist > enemy.getPlayerDetectionRadius()) {
                             // Target out of range -> switch back to default pathing/tower target.
                             enemy.resetTargetPlayer();
+                        }
+                    }
+
+                }
+            }
+            if(gameObject instanceof Player player){
+                Enemy newEnemyTarget = null;
+                if(!player.hasValidTarget()){
+                    newEnemyTarget = findClosestEnemy(player);
+                    if(newEnemyTarget!=null){
+                        player.setFinalTarget(newEnemyTarget);
                     }
                 }
-
             }
             Command currentCommand = commandMap.get(gameObject.getObjectName()); // Fetches Entity related commands for the current entity
             String action = null; // Fetches the specific action from the command object (Target, Action, Attributes)
@@ -92,9 +100,10 @@ public class GameManager {
                 gameObject.update(deltaTime, mainAssets, action);
             } else {
                 gameObject.update(deltaTime, mainAssets, null);
+                
             }
-        }
-             if (gameObject instanceof Entity) {
+        
+            if(gameObject instanceof Entity) {
                 Entity entity = (Entity) gameObject;
                 if (!entity.isAlive()) {
                     iterator.remove(); 
@@ -118,12 +127,32 @@ public class GameManager {
             case "SpawnBarbarian" -> {
                 float xValue = Float.parseFloat(systemAction.getAttribute("x"));
                 float yValue = Float.parseFloat(systemAction.getAttribute("y"));
-                spawnObject(new DarkKnight(xValue,yValue, 100, 50f, null));
+                spawnObject(new DarkKnight(xValue,yValue));
                 System.out.println("Barbarian Created");
                
             }
         }
 
+    }
+
+
+    public Enemy findClosestEnemy(Player player){
+        java.util.Iterator<GameObject> iterator = objectList.iterator();
+        Enemy minimumEnemy = null;
+        float minimumDistance = Float.MAX_VALUE;
+        while(iterator.hasNext()){
+            GameObject gameObject = iterator.next();
+            if(gameObject instanceof Enemy){
+                float dx = gameObject.getX() - player.getX();
+                float dy = gameObject.getY() - player.getY();
+                float dist = (float)Math.hypot(dx, dy);
+                if(dist<minimumDistance){
+                    minimumDistance = dist;
+                    minimumEnemy = (Enemy) gameObject;
+                }
+            }
+        }
+        return minimumEnemy;
     }
     public Player findClosestPlayer(Enemy enemy){ // If it finds a Player (not a Tower) within a certain radius, it returns that. Else it defaults to the closest Tower
         java.util.Iterator<GameObject> iterator = objectList.iterator();
