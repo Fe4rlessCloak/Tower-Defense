@@ -5,7 +5,6 @@ import game.model.DarkKnight;
 import game.model.Enemy;
 import game.model.Entity;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -44,7 +43,7 @@ public class GameManager {
         
         Map<String, Command> commandMap = new HashMap<>(); // Creates a hashmap
         for (Command c : pendingCommands) {
-            commandMap.put(c.getTarget(), c); // The hashmap maps Name -> Command (Target, Action, Attributes)
+            commandMap.put(c.getTarget(), c); // The hashmap maps Target -> Command (Target, Action, Attributes)
         }
 
         Command systemAction = commandMap.get("GameManager"); // If any command in the map is intended for the GameManager
@@ -55,9 +54,6 @@ public class GameManager {
         }
         while(iterator.hasNext()){
             GameObject gameObject = iterator.next();
-
-
-
             if(gameObject instanceof Enemy enemy){ 
                 Player newTarget = null;
                 if(!enemy.hasValidTarget()){
@@ -86,8 +82,6 @@ public class GameManager {
                 }
 
             }
-
-
             Command currentCommand = commandMap.get(gameObject.getObjectName()); // Fetches Entity related commands for the current entity
             String action = null; // Fetches the specific action from the command object (Target, Action, Attributes)
 

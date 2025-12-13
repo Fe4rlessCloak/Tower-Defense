@@ -136,44 +136,53 @@ public class GamePanel extends JPanel implements MouseListener {
     // --- Mouse Inputs (For Future Tower Placement) ---
     @Override
     public void mouseClicked(MouseEvent e) {
-        
-        List<GameObject> objects = gameManager.getGameObjects();
-        
-        GameObject closest = null;
-        double closestDist = Double.MAX_VALUE;
 
-        for(GameObject obj : objects){
-                double dx = e.getX() - obj.getX();
-                double dy = e.getY() - obj.getY();
-                double dist = Math.sqrt(dx*dx + dy*dy);
-
-                if(dist <= obj.getObjectSize()/2){
-                    if(dist < closestDist){
-                        closestDist = dist;
-                        closest = obj;
-                    }
-                }
-        }
-        if(closest!=null){
-            // GameObject clicked = closest;
-            producerExecutor.submit(() -> {
-                
-                // try {
-                //     commandBuffer.issueCommand(new Command(clicked.getObjectName(),"Attack", null));
-                //     System.out.println("Command issued by: " + clicked.getObjectName());
-                // } catch (InterruptedException e1) { e1.printStackTrace(); }
-            });
-        }else{
-            producerExecutor.submit(() -> {
+        producerExecutor.submit(() -> {
                 Map<String, String> spawnAttrs = new HashMap<>();
                 spawnAttrs.put("x", String.valueOf(e.getX())); // Coordinates
                 spawnAttrs.put("y", String.valueOf(e.getY()));
                 try{
                     commandBuffer.issueCommand(new Command("GameManager","SpawnBarbarian",spawnAttrs));
                 }catch (InterruptedException el) {el.printStackTrace();}
-            });
+        });
+        
+        // List<GameObject> objects = gameManager.getGameObjects();
+        
+        // GameObject closest = null;
+        // double closestDist = Double.MAX_VALUE;
 
-        }
+        // for(GameObject obj : objects){
+        //         double dx = e.getX() - obj.getX();
+        //         double dy = e.getY() - obj.getY();
+        //         double dist = Math.sqrt(dx*dx + dy*dy);
+
+        //         if(dist <= obj.getObjectSize()/2){
+        //             if(dist < closestDist){
+        //                 closestDist = dist;
+        //                 closest = obj;
+        //             }
+        //         }
+        // }
+        // if(closest!=null){
+        //     // GameObject clicked = closest;
+        //     producerExecutor.submit(() -> {
+                
+        //         // try {
+        //         //     commandBuffer.issueCommand(new Command(clicked.getObjectName(),"Attack", null));
+        //         //     System.out.println("Command issued by: " + clicked.getObjectName());
+        //         // } catch (InterruptedException e1) { e1.printStackTrace(); }
+        //     });
+        // }else{
+        //     producerExecutor.submit(() -> {
+        //         Map<String, String> spawnAttrs = new HashMap<>();
+        //         spawnAttrs.put("x", String.valueOf(e.getX())); // Coordinates
+        //         spawnAttrs.put("y", String.valueOf(e.getY()));
+        //         try{
+        //             commandBuffer.issueCommand(new Command("GameManager","SpawnBarbarian",spawnAttrs));
+        //         }catch (InterruptedException el) {el.printStackTrace();}
+        //     });
+
+        // }
            
         System.out.println("Clicked at: " + e.getX() + ", " + e.getY());
         

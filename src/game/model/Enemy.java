@@ -9,7 +9,7 @@ import game.utils.Assets;
 public abstract class Enemy extends Entity {
     protected List<Point> path;
 
-    protected final int playerDetectionRadius;
+    protected int playerDetectionRadius;
     
     protected Player finalTarget;
     protected int attackRange;
@@ -22,7 +22,7 @@ public abstract class Enemy extends Entity {
     public Enemy(float x, float y, int health, float speed, String name) {
         super(x, y, health, speed, name);
         this.finalTarget = null;
-        this.playerDetectionRadius = 100;
+        
         this.path = new ArrayList<>();
     }
     public void setTarget(Player finalTarget){
@@ -69,7 +69,7 @@ public abstract class Enemy extends Entity {
                 this.resetCooldown();
                 String attackAnim = determineAttackAnimation(dx, dy);
                 changeCurrentAnimation(attackAnim);
-                lastDirectionalAnimation = attackAnim.replace("attack", "run"); // keep run direction in sync
+                lastDirectionalAnimation = attackAnim;
             }
             if (this.currentAnimation.startsWith("attack") && this.currentFrame == 8) {
                 System.out.println("BARBARIAN HIT FRAME 8: Target: " + this.finalTarget.getObjectName() + 
@@ -80,10 +80,11 @@ public abstract class Enemy extends Entity {
             }   
             
         }else if(dist >= this.attackRange){
-            
-            String newAnimation = determineRunAnimation(dx, dy);
-            this.lastDirectionalAnimation = newAnimation;
-            this.changeCurrentAnimation(newAnimation);
+            this.resetCooldown();
+            String runAnim = determineRunAnimation(dx, dy);
+            this.lastDirectionalAnimation = runAnim;
+            this.changeCurrentAnimation(runAnim);
+            lastDirectionalAnimation = runAnim;
             float vx = (dx / dist) * stepDistance; // Velocity vectors
             float vy = (dy / dist) * stepDistance;
             this.x += vx;

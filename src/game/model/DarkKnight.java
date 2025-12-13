@@ -14,6 +14,7 @@ public class DarkKnight extends Enemy {
         this.className = "DarkKnight";
         this.attackRange = 65;
         ATTACK_RATE_DURATION = 2f;
+        this.playerDetectionRadius = 100;
     }
     private synchronized static final String generateName(){
         String candidateName = DARKKNIGHT_CLASS_NAME + objectID;

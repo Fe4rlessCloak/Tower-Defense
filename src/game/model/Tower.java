@@ -13,6 +13,7 @@ public class Tower extends Player{
         super(x, y, health, 0F, generateName());
         this.className = "Tower";
         this.currentAnimation = Assets.ANIM_IDLE;
+        this.playerDetectionRadius = 60;
     }
     private synchronized static final String generateName(){
         String candidateName = TOWER_CLASS_NAME + objectID;

@@ -52,6 +52,7 @@ public class Assets {
         this.gameAssets = new HashMap<>();
         loadCharacterAssets("DarkKnight");
         loadCharacterAssets("Tower");
+        loadCharacterAssets("Tower");
     }
     private void loadCharacterAssets(String character){
         switch(character){
@@ -84,7 +85,16 @@ public class Assets {
                 loadAnimation(character, ANIM_IDLE_TOP_RIGHT, 1);
             }
             case "Tower" -> {
-                loadAnimation(character, ANIM_IDLE, 1);
+                loadAnimation(character, ANIM_ATTACK_LEFT, 5);
+                loadAnimation(character, ANIM_ATTACK_RIGHT, 5);
+                loadAnimation(character, ANIM_ATTACK_TOP, 5);
+                loadAnimation(character, ANIM_ATTACK_TOP_LEFT, 5);
+                loadAnimation(character, ANIM_ATTACK_TOP_RIGHT, 5);
+                loadAnimation(character, ANIM_IDLE_LEFT, 1);
+                loadAnimation(character, ANIM_IDLE_RIGHT, 1);
+                loadAnimation(character, ANIM_IDLE_TOP, 1);
+                loadAnimation(character, ANIM_IDLE_TOP_LEFT, 1);
+                loadAnimation(character, ANIM_IDLE_TOP_RIGHT, 1);
             }
             default -> System.err.println("Warning: Attempted to load unknown character type: " + character);
         }
