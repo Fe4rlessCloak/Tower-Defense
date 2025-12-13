@@ -4,6 +4,7 @@ import game.GameManager;
 import game.model.GameObject;
 import game.model.Player;
 import game.model.Enemy;
+import game.model.Entity;
 import game.utils.Assets;
 import game.utils.Command;
 import game.utils.CommandBuffer;
@@ -11,7 +12,10 @@ import game.utils.CommandBuffer;
 import javax.swing.JPanel;
 import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.AlphaComposite;
 import java.awt.Color;
+import java.awt.Composite;
 import java.awt.image.BufferedImage;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseEvent;
@@ -68,7 +72,7 @@ public class GamePanel extends JPanel implements MouseListener {
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
-
+        Graphics2D g2d = (Graphics2D) g;
         // --- LAYER 1: Background ---
         if (backgroundImage != null) {
             g.drawImage(backgroundImage, 0, 0, getWidth(), getHeight(), null);
@@ -88,43 +92,59 @@ public class GamePanel extends JPanel implements MouseListener {
 
             int drawX = (int)(obj.getX() - frameW / 2);
             int drawY = (int)(obj.getY() - frameH / 2);
-            
-            
-            // Check if this object is a Barbarian to apply animation
-            if (obj instanceof Enemy) {
-                Enemy enemy = (Enemy) obj;
-                
-                // Get the specific frame for the current action (e.g., "runForward", frame 2)
-                BufferedImage frame = assets.getFrame(enemy.getClassName(),
-                    enemy.getCurrentAnimation(), 
-                    enemy.getCurrentFrame()
-                );
-
-                if (frame != null) {
-                    // Draw the sprite (Scaled to 64x64 or whatever size you prefer)
-                    g.drawImage(frame, drawX, drawY, frameW, frameH, null); 
-                } else {
-                    // Fallback Red Box if sprite isn't found
-                    g.setColor(Color.RED);
-                    g.fillRect(drawX, drawY, 64, 64);
-                }
-            } 
-            else if(obj instanceof Player){
-                Player player = (Player) obj;
-                // Default drawing for non-animated objects (e.g., Towers later)
-                BufferedImage frame = assets.getFrame(player.getClassName(),
-                    player.getCurrentAnimation(), 
-                    player.getCurrentFrame()
-                );
-                if (frame != null) {
-                    // Draw the sprite (Scaled to 64x64 or whatever size you prefer)
-                    g.drawImage(frame, drawX, drawY, frameW, frameH, null); 
-                } else {
-                    // Fallback Red Box if sprite isn't found
-                    g.setColor(Color.RED);
-                    g.fillRect(drawX, drawY, 64, 64);
-                }
+            Entity entity = null;
+            BufferedImage frame = null;
+            if (obj instanceof Enemy enemy) {
+                frame = assets.getFrame(enemy.getClassName(), enemy.getCurrentAnimation(), enemy.getCurrentFrame());
+                entity = enemy;
+            } else if(obj instanceof Player player){
+                frame = assets.getFrame(player.getClassName(), player.getCurrentAnimation(), player.getCurrentFrame());
+                entity = player; // Towers are entities!
             }
+            if (frame == null) {
+                g2d.setColor(Color.RED);
+                g2d.fillRect(drawX, drawY, frameW, frameH);
+                continue; 
+            }
+            float opacity = 1.0f; 
+            Composite originalComposite = g2d.getComposite();
+            if (entity != null && entity.isFading()) { // <-- Use the clean isFading() method
+                // If dying, calculate the fade opacity.
+                opacity = entity.getDeathTimer() / entity.getDeathFadeDuration();
+                if (opacity < 0.0f) opacity = 0.0f;
+            }
+
+            g2d.setComposite(AlphaComposite.SrcOver.derive(opacity));
+            g2d.drawImage(frame, drawX, drawY, frameW, frameH, null);
+
+            if (entity != null && entity.getDamageFlashTimer() > 0 && !entity.isFading()) {
+            
+                // 1. Reset composite temporarily for the flash overlay
+                g2d.setComposite(AlphaComposite.SrcOver.derive(1.0f)); 
+
+                // 2. Create the flash buffer (This is the guaranteed masking technique)
+                BufferedImage flashBuffer = new BufferedImage(frameW, frameH, BufferedImage.TYPE_INT_ARGB);
+                Graphics2D g2dBuffer = flashBuffer.createGraphics();
+                
+                g2dBuffer.drawImage(frame, 0, 0, frameW, frameH, null);
+                
+                // Apply red tint to buffer
+                g2dBuffer.setComposite(AlphaComposite.SrcAtop.derive(0.8f));
+                g2dBuffer.setColor(Color.RED); 
+                g2dBuffer.fillRect(0, 0, frameW, frameH); 
+                g2dBuffer.dispose();
+                
+                // 3. Draw the flashing buffer on top (at full opacity, as fade is 
+                // handled by the base draw). We can simplify this draw to full 1.0f
+                g2d.drawImage(flashBuffer, drawX, drawY, null); 
+            }
+            
+            // --- E. Final Cleanup (CRITICAL) ---
+            // Restore the composite back to the original (full opacity 1.0f) 
+            g2d.setComposite(originalComposite);
+        
+
+                
         }
     }
 

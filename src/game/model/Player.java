@@ -51,14 +51,14 @@ public abstract class Player extends Entity{
 
         if (this.finalTarget == null || this.path.isEmpty()) { // If there is no target, the player will idle
             String idleAnimation = getIdleAnimation();
-            this.changeCurrentAnimation(idleAnimation);
+            this.changeCurrentAnimation(idleAnimation, false);
             this.attackCooldownTimer = 0.0f;
             return; 
         }
 
         if (attackCooldownTimer > 0) { 
             String idleAnimation = getIdleAnimation();
-            this.changeCurrentAnimation(idleAnimation);
+            this.changeCurrentAnimation(idleAnimation, false);
             attackCooldownTimer -= deltaTime;
         }
 
@@ -71,7 +71,7 @@ public abstract class Player extends Entity{
             if (!this.currentAnimation.startsWith("attack")) { // If the player has not attacked yet
                 this.resetCooldown();
                 String attackAnim = determineAttackAnimation(dx, dy);
-                changeCurrentAnimation(attackAnim);
+                changeCurrentAnimation(attackAnim, true);
                 lastDirectionalAnimation = attackAnim;
             }
             if (this.currentAnimation.startsWith("attack") && this.currentFrame == 4) { // If the enemy is attacking, and hits frame 8
@@ -84,7 +84,7 @@ public abstract class Player extends Entity{
             
         }else if(dist >= this.attackRange){ // The enemy is not within range
             this.resetCooldown();
-            this.changeCurrentAnimation(this.defaultAnimation);
+            this.changeCurrentAnimation(this.defaultAnimation, false);
         }
 
 
@@ -149,10 +149,22 @@ public abstract class Player extends Entity{
         // Fallback if the stored string is somehow corrupted
         return Assets.ANIM_IDLE_TOP; 
     }
-    public void changeCurrentAnimation(String newAnimation){   
-        if(this.currentAnimation.equals(newAnimation)){
+     @Override
+    public void changeCurrentAnimation(String newAnimation, boolean forcefulExit){  
+        if(forcefulExit){
+            this.isPerformingAnimation = true;
+            this.currentAnimation = newAnimation;
+            this.currentFrame = 0;
             return;
         }
+        if(this.isPerformingAnimation){
+            return;
+        } 
+        if(this.currentAnimation.equals(newAnimation)){
+            this.isPerformingAnimation = true;
+            return;
+        }
+        this.isPerformingAnimation = true;
         this.currentAnimation = newAnimation;
         this.currentFrame = 0;
     }

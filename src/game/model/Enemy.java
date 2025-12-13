@@ -45,7 +45,7 @@ public abstract class Enemy extends Entity {
 
         if (this.finalTarget == null || this.path.isEmpty()) { // If there is no target, the enemy will idle
             String idleAnimation = getIdleAnimation();
-            this.changeCurrentAnimation(idleAnimation);
+            this.changeCurrentAnimation(idleAnimation, false);
             this.attackCooldownTimer = 0.0f;
             return; 
         }
@@ -62,18 +62,20 @@ public abstract class Enemy extends Entity {
 
         if (attackCooldownTimer > 0) { 
             String idleAnimation = getIdleAnimation();
-            this.changeCurrentAnimation(idleAnimation);
+            this.changeCurrentAnimation(idleAnimation, false);
             attackCooldownTimer -= deltaTime;
         }
+       
         
-        if (dist<this.attackRange && attackCooldownTimer <= 0) { // If enemy is within range and there's no cooldown
+        
+        if (dist<this.attackRange && attackCooldownTimer <= 0) { // If enemy is within range and there's no cooldown 
             if (!this.currentAnimation.startsWith("attack")) { // If the enemy has not attacked yet
                 this.resetCooldown();
                 String attackAnim = determineAttackAnimation(dx, dy);
-                changeCurrentAnimation(attackAnim);
+                changeCurrentAnimation(attackAnim, true);
                 lastDirectionalAnimation = attackAnim;
             }
-            if (this.currentAnimation.startsWith("attack") && this.currentFrame == 8) { // If the enemy is attacking, and hits frame 8
+            if (this.currentAnimation.startsWith("attack") && this.currentFrame == 5) { // If the enemy is attacking, and hits frame 8
                 System.out.println("BARBARIAN HIT FRAME 8: Target: " + this.finalTarget.getObjectName() + 
                             " | Health BEFORE: " + this.finalTarget.getHealth());
                 this.finalTarget.takeDamage(50);
@@ -81,11 +83,12 @@ public abstract class Enemy extends Entity {
                 System.out.println("BARBARIAN HIT FRAME 8: Health AFTER: " + this.finalTarget.getHealth());
             }   
             
+            
         }else if(dist >= this.attackRange){ // The enemy is not within range
             this.resetCooldown();
             String runAnim = determineRunAnimation(dx, dy);
             this.lastDirectionalAnimation = runAnim;
-            this.changeCurrentAnimation(runAnim);
+            this.changeCurrentAnimation(runAnim, false);
             lastDirectionalAnimation = runAnim;
             float vx = (dx / dist) * stepDistance; // Velocity vectors
             float vy = (dy / dist) * stepDistance;
@@ -111,10 +114,22 @@ public abstract class Enemy extends Entity {
         this.finalTarget = target;
         
     }
-    public void changeCurrentAnimation(String newAnimation){   
-        if(this.currentAnimation.equals(newAnimation)){
+    @Override
+    public void changeCurrentAnimation(String newAnimation, boolean forcefulExit){  
+        if(forcefulExit){
+            this.isPerformingAnimation = true;
+            this.currentAnimation = newAnimation;
+            this.currentFrame = 0;
             return;
         }
+        if(this.isPerformingAnimation){
+            return;
+        } 
+        if(this.currentAnimation.equals(newAnimation)){
+            this.isPerformingAnimation = true;
+            return;
+        }
+        this.isPerformingAnimation = true;
         this.currentAnimation = newAnimation;
         this.currentFrame = 0;
     }

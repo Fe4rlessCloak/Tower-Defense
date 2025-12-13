@@ -105,7 +105,8 @@ public class GameManager {
         
             if(gameObject instanceof Entity) {
                 Entity entity = (Entity) gameObject;
-                if (!entity.isAlive()) {
+                if (!entity.isAlive() && entity.removalCandidate()) {
+                    
                     iterator.remove(); 
                 }
             }         
