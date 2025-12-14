@@ -17,7 +17,9 @@ public abstract class Player extends Entity{
     private boolean isTargetingEnemy = false;
     protected float ATTACK_RATE_DURATION = 1.25f; 
     protected String lastDirectionalAnimation = Assets.ANIM_IDLE_TOP;   
+    protected int attackDamage;
 
+    protected int attackFrame; // Important for syncing animations across different characters
     
     // 
     public Player(float x, float y){
@@ -74,10 +76,10 @@ public abstract class Player extends Entity{
                 changeCurrentAnimation(attackAnim, true);
                 lastDirectionalAnimation = attackAnim;
             }
-            if (this.currentAnimation.startsWith("attack") && this.currentFrame == 4) { // If the enemy is attacking, and hits frame 8
+            if (this.currentAnimation.startsWith("attack") && this.currentFrame == this.attackFrame) { // If the enemy is attacking, and hits frame 8
                 System.out.println("TOWER HIT FRAME 4: Target: " + this.finalTarget.getObjectName() + 
                             " | Health BEFORE: " + this.finalTarget.getHealth());
-                this.finalTarget.takeDamage(50);
+                this.finalTarget.takeDamage(this.attackDamage);
                 this.attackCooldownTimer = ATTACK_RATE_DURATION; // Start cooldown
                 System.out.println("TOWER HIT FRAME 4: Health AFTER: " + this.finalTarget.getHealth());
             }   

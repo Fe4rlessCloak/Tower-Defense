@@ -12,6 +12,7 @@ public class DarkKnight extends Enemy {
         health = 100;
         speed = 30F;
         objectName = generateName();
+        attackFrame = 5;
     }
     
     public DarkKnight(float x, float y) {

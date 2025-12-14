@@ -91,11 +91,17 @@ public class Assets {
                 loadAnimation(character, ANIM_ATTACK_TOP, 5);
                 loadAnimation(character, ANIM_ATTACK_TOP_LEFT, 5);
                 loadAnimation(character, ANIM_ATTACK_TOP_RIGHT, 5);
+                loadAnimation(character, ANIM_ATTACK_DOWNWARD, 5);
+                loadAnimation(character, ANIM_ATTACK_DOWN_LEFT, 5);
+                loadAnimation(character, ANIM_ATTACK_DOWN_RIGHT, 5);
                 loadAnimation(character, ANIM_IDLE_LEFT, 1);
                 loadAnimation(character, ANIM_IDLE_RIGHT, 1);
                 loadAnimation(character, ANIM_IDLE_TOP, 1);
                 loadAnimation(character, ANIM_IDLE_TOP_LEFT, 1);
                 loadAnimation(character, ANIM_IDLE_TOP_RIGHT, 1);
+                loadAnimation(character, ANIM_IDLE_DOWNWARD, 1);
+                loadAnimation(character, ANIM_IDLE_DOWN_LEFT, 1);
+                loadAnimation(character, ANIM_IDLE_DOWN_RIGHT, 1);
             }
             default -> System.err.println("Warning: Attempted to load unknown character type: " + character);
         }

@@ -18,7 +18,7 @@ public abstract class Enemy extends Entity {
     private boolean isTargetingPlayer = false;
     protected float ATTACK_RATE_DURATION = 1.25f; 
     protected String lastDirectionalAnimation = Assets.ANIM_RUN_DOWNWARD;
-
+    protected int attackFrame;
     public Enemy(float x, float y) {
         super(x, y);
         this.finalTarget = null;
@@ -75,7 +75,7 @@ public abstract class Enemy extends Entity {
                 changeCurrentAnimation(attackAnim, true);
                 lastDirectionalAnimation = attackAnim;
             }
-            if (this.currentAnimation.startsWith("attack") && this.currentFrame == 5) { // If the enemy is attacking, and hits frame 8
+            if (this.currentAnimation.startsWith("attack") && this.currentFrame == this.attackFrame) { // If the enemy is attacking, and hits frame 8
                 System.out.println("BARBARIAN HIT FRAME 8: Target: " + this.finalTarget.getObjectName() + 
                             " | Health BEFORE: " + this.finalTarget.getHealth());
                 this.finalTarget.takeDamage(50);

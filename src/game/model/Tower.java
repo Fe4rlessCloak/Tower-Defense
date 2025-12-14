@@ -11,6 +11,8 @@ public class Tower extends Player{
         speed = 0F;
         health = 500;
         objectName = generateName();
+        attackDamage = 25;
+        attackFrame = 4;
     }
     
 
