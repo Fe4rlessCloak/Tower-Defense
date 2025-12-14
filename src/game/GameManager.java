@@ -57,8 +57,8 @@ private boolean reevaluateClosestTarget = false;
         
         java.util.Iterator<GameObject> iterator = objectList.iterator(); 
 
-        List<Command> pendingCommands = new ArrayList<>();
-        commandBuffer.drainTo(pendingCommands);
+        List<Command> pendingCommands = new ArrayList<>(); // A command is represented as: Target, Action, Attributes
+        commandBuffer.drainTo(pendingCommands); // Drains the commandBuffer (containing commands) to an Array-List each tick
 
         Map<String, Command> commandMap = new HashMap<>();
         for (Command c : pendingCommands) {
@@ -68,8 +68,8 @@ private boolean reevaluateClosestTarget = false;
         Command systemAction = commandMap.get("GameManager");
 
         if (systemAction != null) {
-            this.handleSystemAction(systemAction);
-            commandMap.remove("GameManager");
+            this.handleSystemAction(systemAction); // Assuming we have a command for the GameManager, it forwards it
+            commandMap.remove("GameManager"); // Remove the GameManager/System-intended command, so it doesn't try to update a GameObject
         }
 
         while (iterator.hasNext()) {
@@ -126,8 +126,9 @@ private boolean reevaluateClosestTarget = false;
     }
 
     public void spawnObject(GameObject toAdd) {
-        pendingObjects.add(toAdd);
+        pendingObjects.add(toAdd); // We add new objects to a pending list, which is dumped into the actual game object list in the next tick.
     }
+    
 
     public List<GameObject> getGameObjects() {
         return List.copyOf(this.objectList);
@@ -170,6 +171,9 @@ private boolean reevaluateClosestTarget = false;
         }
 
     }
+
+     // Check to see if the current target (non-tower) has gone out of range
+     // Target out of range -> switch back to default pathing/tower target.
     public void checkToResetToTower(Enemy enemy){ 
         Player currentTarget = enemy.getFinalTarget();
         // Check to see if the current target (non-tower) has gone out of range

@@ -41,12 +41,12 @@ public class MainClass {
 
 
         // 2. Spawn a Test Object (Barbarian at 50,200 with 100HP and speed 100)
-        GameObject barbarian = new DarkKnight(90f, 100f);
-        GameObject tower = new Tower(90f, 350f);
-        Tower tower2 = new Tower(245f, 650);
-        mainGame.spawnObject(barbarian);
-        mainGame.spawnObject(tower);
-        mainGame.spawnObject(tower2);
+        // GameObject barbarian = new DarkKnight(90f, 100f);
+        // GameObject tower = new Tower(90f, 350f);
+        // Tower tower2 = new Tower(245f, 650);
+        // mainGame.spawnObject(barbarian);
+        // mainGame.spawnObject(tower);
+        // mainGame.spawnObject(tower2);
         // 3. Start GUI on Event Dispatch Thread
          
         SwingUtilities.invokeLater(() -> {
