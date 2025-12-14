@@ -25,7 +25,7 @@ public class GameManager {
     private List<GameObject> objectList;
     private List<GameObject> pendingObjects;
     private CommandBuffer commandBuffer;
-    
+    private boolean reevaluateClosestTarget = false;
     GameManager(Assets mainAssets, CommandBuffer commandBuffer ){
         this.objectList = new ArrayList<GameObject>();
         this.commandBuffer = commandBuffer;
@@ -54,42 +54,28 @@ public class GameManager {
         }
         while(iterator.hasNext()){
             GameObject gameObject = iterator.next();
-            if(gameObject instanceof Enemy enemy){ 
-                Player newTarget = null;
-                if(!enemy.hasValidTarget()){
-                    newTarget = findClosestPlayer(enemy);
-                    if(newTarget!=null){
-                        if(newTarget instanceof Tower){
-                            enemy.setIsTargetingPlayer(false);
-                        }else{
-                            enemy.setIsTargetingPlayer(true);
-                        }
-                        enemy.setFinalTarget(newTarget);  
-                    }
-                }else if(enemy.isTargetingPlayer()){ // Even though the Game Manager is not supposed to micro-manage Enemy's state, here we need a check to see if the enemy should target a Tower or a non-Tower (and get that tower as well)
-                    Player currentTarget = enemy.getFinalTarget();
-                    // Check to see if the current target (non-tower) has gone out of range
-                    if (currentTarget != null) {
-                        float dx = currentTarget.getX() - enemy.getX();
-                        float dy = currentTarget.getY() - enemy.getY();
-                        float dist = (float)Math.hypot(dx, dy);
-                        if (dist > enemy.getPlayerDetectionRadius()) {
-                            // Target out of range -> switch back to default pathing/tower target.
-                            enemy.resetTargetPlayer();
-                        }
-                    }
-
+            if(reevaluateClosestTarget){
+                if(gameObject instanceof Enemy enemy){
+                    setNewPlayerTarget(enemy);
+                    checkToResetToTower(enemy);
+                }else if(gameObject instanceof Player player){
+                    setNewEnemyTarget(player);
                 }
-            }
-            if(gameObject instanceof Player player){
-                Enemy newEnemyTarget = null;
-                if(!player.hasValidTarget()){
-                    newEnemyTarget = findClosestEnemy(player);
-                    if(newEnemyTarget!=null){
-                        player.setFinalTarget(newEnemyTarget);
+            }else{
+                if(gameObject instanceof Enemy enemy){ 
+                    if(!enemy.hasValidTarget()){
+                        setNewPlayerTarget(enemy);
+                    }else if(enemy.isTargetingPlayer()){ // Even though the Game Manager is not supposed to micro-manage Enemy's state, here we need a check to see if the enemy should target a Tower or a non-Tower (and get that tower as well)
+                        checkToResetToTower(enemy);
+                    }
+                }
+                if(gameObject instanceof Player player){
+                    if(!player.hasValidTarget()){
+                        setNewEnemyTarget(player);
                     }
                 }
             }
+            
             Command currentCommand = commandMap.get(gameObject.getObjectName()); // Fetches Entity related commands for the current entity
             String action = null; // Fetches the specific action from the command object (Target, Action, Attributes)
 
@@ -111,9 +97,10 @@ public class GameManager {
                 }
             }         
         }
-
+        reevaluateClosestTarget = false;
         if(!pendingObjects.isEmpty()){
             objectList.addAll(pendingObjects);
+            reevaluateClosestTarget = true;
             pendingObjects.clear();
         }
     }
@@ -135,7 +122,38 @@ public class GameManager {
         }
 
     }
-
+    public void checkToResetToTower(Enemy enemy){ 
+        Player currentTarget = enemy.getFinalTarget();
+        // Check to see if the current target (non-tower) has gone out of range
+        if (currentTarget != null) {
+            float dx = currentTarget.getX() - enemy.getX();
+            float dy = currentTarget.getY() - enemy.getY();
+            float dist = (float)Math.hypot(dx, dy);
+            if (dist > enemy.getPlayerDetectionRadius()) {
+                // Target out of range -> switch back to default pathing/tower target.
+                enemy.resetTargetPlayer();
+            }
+        }
+    }
+    public void setNewEnemyTarget(Player player){
+        Enemy newEnemyTarget = null;
+        newEnemyTarget = findClosestEnemy(player);
+        if(newEnemyTarget!=null){
+            player.setFinalTarget(newEnemyTarget);
+        }
+    }
+    public void setNewPlayerTarget(Enemy enemy){
+        Player newTarget = null;
+        newTarget = findClosestPlayer(enemy);
+        if(newTarget!=null){
+            if(newTarget instanceof Tower){
+                enemy.setIsTargetingPlayer(false);
+            }else{
+                enemy.setIsTargetingPlayer(true);
+            }
+            enemy.setFinalTarget(newTarget);  
+        }
+    }
 
     public Enemy findClosestEnemy(Player player){
         java.util.Iterator<GameObject> iterator = objectList.iterator();
