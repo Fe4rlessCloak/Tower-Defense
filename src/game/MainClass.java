@@ -3,7 +3,9 @@ package game;
 import game.model.DarkKnight;
 import game.model.Entity;
 import game.model.GameObject;
+import game.model.Player;
 import game.model.Tower;
+import game.model.User;
 import game.ui.GameFrame;
 import game.ui.GamePanel;
 import game.utils.Assets;
@@ -29,6 +31,15 @@ public class MainClass {
         Assets mainAssets = new Assets();
         GameManager mainGame = new GameManager(mainAssets,commandBuffer);
         
+
+        // Create Player and register
+        User mainUser = new User();
+        mainUser.addGold(300); // starting gold for testing
+        mainGame.setUser(mainUser);
+        
+
+
+
         // 2. Spawn a Test Object (Barbarian at 50,200 with 100HP and speed 100)
         GameObject barbarian = new DarkKnight(90f, 100f);
         GameObject tower = new Tower(90f, 350f);

@@ -10,12 +10,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-
-
-
 import game.model.GameObject;
 import game.model.Player;
 import game.model.Tower;
+import game.model.User;
 import game.utils.Assets;
 import game.utils.Command;
 import game.utils.CommandBuffer;
@@ -25,34 +23,56 @@ public class GameManager {
     private List<GameObject> objectList;
     private List<GameObject> pendingObjects;
     private CommandBuffer commandBuffer;
-    private boolean reevaluateClosestTarget = false;
-    GameManager(Assets mainAssets, CommandBuffer commandBuffer ){
+private boolean reevaluateClosestTarget = false;
+    private User user; // The shared player object
+    private boolean buildMode = false;
+    private static final int TOWER_COST = 100; // adjust as needed
+
+    GameManager(Assets mainAssets, CommandBuffer commandBuffer) {
         this.objectList = new ArrayList<GameObject>();
         this.commandBuffer = commandBuffer;
         this.mainAssets = mainAssets;
         this.pendingObjects = new ArrayList<>();
     }
 
+    // Player registration
+    public void setUser(User p) {
+        this.user = p;
+    }
+
+    public User getUser() {
+        return this.user;
+    }
+
+    public void setBuildMode(boolean value) {
+        this.buildMode = value;
+    }
+
+    public boolean isBuildMode() {
+        return this.buildMode;
+    }
+
+    
     public void update(float deltaTime){
         
         java.util.Iterator<GameObject> iterator = objectList.iterator(); 
 
-        List<Command> pendingCommands = new ArrayList<>(); // A command is represented as: Target, Action, Attributes
-        commandBuffer.drainTo(pendingCommands); // Drains the commandBuffer (containing commands) to an Array-List each tick
+        List<Command> pendingCommands = new ArrayList<>();
+        commandBuffer.drainTo(pendingCommands);
 
-        
-        Map<String, Command> commandMap = new HashMap<>(); // Creates a hashmap
+        Map<String, Command> commandMap = new HashMap<>();
         for (Command c : pendingCommands) {
             commandMap.put(c.getTarget(), c); // The hashmap maps Target -> Command (Target, Action, Attributes)
         }
 
-        Command systemAction = commandMap.get("GameManager"); // If any command in the map is intended for the GameManager
+        Command systemAction = commandMap.get("GameManager");
 
         if (systemAction != null) {
-            this.handleSystemAction(systemAction);  // Assuming we have a command for the GameManager, it forwards it
-            commandMap.remove("GameManager"); // Remove the GameManager/System-intended command, so it doesn't try to update a GameObject
+            this.handleSystemAction(systemAction);
+            commandMap.remove("GameManager");
         }
-        while(iterator.hasNext()){
+
+        while (iterator.hasNext()) {
             GameObject gameObject = iterator.next();
             if(reevaluateClosestTarget){
                 if(gameObject instanceof Enemy enemy){
@@ -76,13 +96,13 @@ public class GameManager {
                 }
             }
             
-            Command currentCommand = commandMap.get(gameObject.getObjectName()); // Fetches Entity related commands for the current entity
-            String action = null; // Fetches the specific action from the command object (Target, Action, Attributes)
+            Command currentCommand = commandMap.get(gameObject.getObjectName());
+            String action = null;
 
-            if(currentCommand!=null){ // Determines if there's a command enqueued for the current entity
-                action = currentCommand.getAction(); // Fetches that command action (String)
+            if (currentCommand != null) {
+                action = currentCommand.getAction();
             }
-            if(action!=null){
+            if (action != null) {
                 gameObject.update(deltaTime, mainAssets, action);
             } else {
                 gameObject.update(deltaTime, mainAssets, null);
@@ -104,20 +124,48 @@ public class GameManager {
             pendingObjects.clear();
         }
     }
-    public void spawnObject(GameObject toAdd){
-        pendingObjects.add(toAdd); // We add new objects to a pending list, which is dumped into the actual game object list in the next tick.
+
+    public void spawnObject(GameObject toAdd) {
+        pendingObjects.add(toAdd);
     }
-    public List<GameObject> getGameObjects(){
+
+    public List<GameObject> getGameObjects() {
         return List.copyOf(this.objectList);
     }
-    private void handleSystemAction(Command systemAction){
-        switch (systemAction.getAction()){
+
+    private void handleSystemAction(Command systemAction) {
+        switch (systemAction.getAction()) {
             case "SpawnBarbarian" -> {
                 float xValue = Float.parseFloat(systemAction.getAttribute("x"));
                 float yValue = Float.parseFloat(systemAction.getAttribute("y"));
                 spawnObject(new DarkKnight(xValue,yValue));
                 System.out.println("Barbarian Created");
                
+            }case "SpawnTower" -> {
+                // Attempt to spawn a tower if player has enough gold
+                float xValue = Float.parseFloat(systemAction.getAttribute("x"));
+                float yValue = Float.parseFloat(systemAction.getAttribute("y"));
+                if (this.user == null) {
+                    System.err.println("SpawnTower failed: No player registered.");
+                    return;
+                }
+                synchronized (this.user) {
+                    if (this.user.getGold() >= TOWER_COST) {
+                        boolean success = this.user.spendGold(TOWER_COST);
+                        if (success) {
+                            spawnObject(new Tower(xValue, yValue));
+                            System.out.println("Tower spawned at (" + xValue + "," + yValue + ")");
+                        } else {
+                            System.out.println("Tower spawn failed: spendGold returned false.");
+                        }
+                    } else {
+                        System.out.println("Not enough gold to spawn tower. Required: " + TOWER_COST + ", have: " + this.user.getGold());
+                    }
+                }
+            }
+            case "AddGold" -> {
+                int amount = Integer.parseInt(systemAction.getAttribute("amount"));
+                if (this.user != null) this.user.addGold(amount);
             }
         }
 
@@ -155,6 +203,7 @@ public class GameManager {
         }
     }
 
+    
     public Enemy findClosestEnemy(Player player){
         java.util.Iterator<GameObject> iterator = objectList.iterator();
         Enemy minimumEnemy = null;
@@ -173,6 +222,7 @@ public class GameManager {
         }
         return minimumEnemy;
     }
+    
     public Player findClosestPlayer(Enemy enemy){ // If it finds a Player (not a Tower) within a certain radius, it returns that. Else it defaults to the closest Tower
         java.util.Iterator<GameObject> iterator = objectList.iterator();
         Player minimumPlayer = null;
@@ -202,7 +252,6 @@ public class GameManager {
                 }
                 
             }
-
         }
 
         if (minimumPlayer != null) {

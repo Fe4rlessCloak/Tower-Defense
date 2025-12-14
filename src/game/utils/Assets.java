@@ -53,6 +53,7 @@ public class Assets {
         loadCharacterAssets("DarkKnight");
         loadCharacterAssets("Tower");
         loadCharacterAssets("Tower");
+        loadCharacterAssets("Player");
     }
     private void loadCharacterAssets(String character){
         switch(character){
@@ -103,6 +104,13 @@ public class Assets {
                 loadAnimation(character, ANIM_IDLE_DOWN_LEFT, 1);
                 loadAnimation(character, ANIM_IDLE_DOWN_RIGHT, 1);
             }
+            case "Player" -> {
+                if (gameAssets.containsKey("Tower")) {
+                    gameAssets.put("Player", gameAssets.get("Tower"));
+                }
+            }
+
+
             default -> System.err.println("Warning: Attempted to load unknown character type: " + character);
         }
         
@@ -155,16 +163,24 @@ public class Assets {
     public BufferedImage getFrame(String characterName, String animationName, int frameIndex) {
         Map<String, List<BufferedImage>> characterMap = gameAssets.get(characterName);
 
+        // SAFETY CHECK (THIS WAS MISSING)
+        if (characterMap == null) {
+            System.err.println("No assets loaded for character: " + characterName);
+            return null;
+        }
+
         List<BufferedImage> frames = characterMap.get(animationName);
+
         if (frames != null && !frames.isEmpty()) {
-            // Safety check: ensure index is within bounds
             if (frameIndex >= frames.size()) {
-                 frameIndex = 0;
+                frameIndex = 0;
             }
             return frames.get(frameIndex);
         }
+
         return null;
-    }
+}
+
     public int getFrameCount(String characterName, String animationName) {
         Map<String, List<BufferedImage>> characterMap = gameAssets.get(characterName);
         
