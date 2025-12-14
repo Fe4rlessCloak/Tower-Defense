@@ -10,6 +10,7 @@ public class DarkKnight extends Enemy {
     private static int objectID = 1;
     {
         health = 100;
+        maxHealth = health;
         speed = 30F;
         objectName = generateName();
         attackFrame = 5;

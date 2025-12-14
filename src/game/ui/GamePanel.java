@@ -11,6 +11,7 @@ import game.utils.CommandBuffer;
 
 import javax.swing.JPanel;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.AlphaComposite;
@@ -147,11 +148,71 @@ public class GamePanel extends JPanel implements MouseListener {
                 // handled by the base draw). We can simplify this draw to full 1.0f
                 g2d.drawImage(flashBuffer, drawX, drawY, null); 
             }
-            
+            if (entity != null && entity.isAlive()) {
+    
+                // 1. Define bar properties
+                int barWidth = frameW; // Match the width of the entity sprite
+                int barHeight = 6;     // Thin bar
+                int barY = drawY - 10; // 10 pixels above the sprite
+                
+                float currentHealthRatio = (float)entity.getHealth() / entity.getMaxHealth();
+                
+                int healthBarFill = (int)(barWidth * currentHealthRatio);
+
+                // 2. Draw the background/empty bar (e.g., black)
+                g2d.setColor(Color.BLACK);
+                g2d.setComposite(AlphaComposite.SrcAtop.derive(0.5f));
+                g2d.fillRect(drawX, barY, barWidth, barHeight);
+                
+                // 3. Draw the health fill (e.g., green/red gradient)
+                g2d.setColor(Color.GREEN);
+                
+                // Optional: Turn the bar yellow or red when health is low
+                if (currentHealthRatio < 0.5f) {
+                    g2d.setColor(Color.YELLOW);
+                }
+                if (currentHealthRatio < 0.3f) {
+                    g2d.setColor(Color.RED);
+                }
+                
+                g2d.fillRect(drawX, barY, healthBarFill, barHeight);
+                
+                // Optional: Draw a white border
+                g2d.setColor(Color.WHITE);
+                g2d.drawRect(drawX, barY, barWidth, barHeight);
+            }
+            if (entity != null && entity.getFloatingTextTimer() > 0) {
+    
+                // Calculate the Y offset to make it float upward over its lifespan
+                float totalRiseDistance = 40f; // Pixels to float
+                float elapsedRatio = 1.0f - (entity.getFloatingTextTimer() / entity.getTextLifespan());
+                int yOffset = (int)(totalRiseDistance * elapsedRatio);
+                
+                String display = String.valueOf(entity.getLastDamageDealth());
+                
+                // Calculate Opacity (fade during the last 0.2s, for example)
+                opacity = entity.getFloatingTextTimer() / 0.2f;
+                if (opacity > 1.0f) opacity = 1.0f;
+                if (opacity < 0.0f) opacity = 0.0f;
+
+                // Set the drawing environment
+                g2d.setColor(Color.YELLOW);
+                g2d.setFont(new Font("Arial", Font.BOLD, 18)); 
+                
+                originalComposite = g2d.getComposite();
+                g2d.setComposite(AlphaComposite.SrcOver.derive(opacity));
+
+                // Draw the text (Position is above the entity center, offset by the float distance)
+                g2d.drawString(display, 
+                            drawX + frameW/2 - g2d.getFontMetrics().stringWidth(display) / 2, 
+                            drawY - yOffset - 25); // 25 is a fixed distance above the entity
+                            
+                g2d.setComposite(originalComposite);
+            }
             // --- E. Final Cleanup (CRITICAL) ---
             // Restore the composite back to the original (full opacity 1.0f) 
             g2d.setComposite(originalComposite);
-        
+            
 
                 
         }

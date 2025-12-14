@@ -21,21 +21,28 @@ public abstract class Entity extends GameObject {
     protected float damageFlashTimer = 0.0f;
     private static final float FLASH_DURATION = 0.15f;
 
-    protected boolean aliveStatus = true;
+    protected int lastDamageDealt = 0;
+    protected float floatingTextTimer = 0.0f;
+    private static final float TEXT_LIFESPAN = 1.2f; // Time text stays visible
 
+    protected int maxHealth;
+    protected boolean aliveStatus = true;
+    
     Entity(float x, float y){
         super(x, y);
         this.health = health;
         this.speed = speed;
     }
     Entity(){
-
+        
     }
     
     public void takeDamage(int damage){
         this.health = this.health - damage;
         System.out.println("Current Health:" + this.health);
         this.damageFlashTimer = FLASH_DURATION;
+        this.lastDamageDealt = damage;
+        this.floatingTextTimer = TEXT_LIFESPAN; 
     }
     
     public boolean isAlive(){
@@ -75,6 +82,12 @@ public abstract class Entity extends GameObject {
         }
         if (this.damageFlashTimer <= 0) {
             this.damageFlashTimer = 0.0f;
+        }
+        if (this.floatingTextTimer > 0) {
+            this.floatingTextTimer -= deltaTime;
+        }
+        if (this.floatingTextTimer < 0) {
+            this.floatingTextTimer = 0.0f;
         }
        if (!isAlive() && this.damageFlashTimer == 0.0f) {
             // This handles the transition and the fade countdown
@@ -123,5 +136,17 @@ public abstract class Entity extends GameObject {
 
     public boolean isFading() {
        return !isAlive() && this.DEATH_TIMER > 0 && this.DEATH_TIMER < this.DEATH_FADE_DURATON;
+    }
+    public int getMaxHealth() {
+        return this.maxHealth;
+    }
+    public int getLastDamageDealth(){
+        return this.lastDamageDealt;
+    }
+    public float getFloatingTextTimer(){
+        return this.floatingTextTimer;
+    }
+    public float getTextLifespan(){
+        return this.TEXT_LIFESPAN;
     }
 }
