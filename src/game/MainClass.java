@@ -5,6 +5,7 @@ import game.model.Entity;
 import game.model.GameObject;
 import game.model.Player;
 import game.model.Tower;
+import game.model.User;
 import game.ui.GameFrame;
 import game.ui.GamePanel;
 import game.utils.Assets;
@@ -32,10 +33,10 @@ public class MainClass {
         
 
         // Create Player and register
-        Player mainPlayer = new Player(250f, 350f, 500, 0f, "PlayerMain");
-        mainPlayer.addGold(300); // starting gold for testing
-        mainGame.setPlayer(mainPlayer);
-        mainGame.spawnObject(mainPlayer);
+        User mainUser = new User();
+        mainUser.addGold(300); // starting gold for testing
+        mainGame.setUser(mainUser);
+        
 
 
 

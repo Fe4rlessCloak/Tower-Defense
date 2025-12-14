@@ -11,6 +11,7 @@ import java.util.Map;
 import game.model.GameObject;
 import game.model.Player;
 import game.model.Tower;
+import game.model.User;
 import game.utils.Assets;
 import game.utils.Command;
 import game.utils.CommandBuffer;
@@ -21,7 +22,7 @@ public class GameManager {
     private List<GameObject> pendingObjects;
     private CommandBuffer commandBuffer;
 
-    private Player player; // The shared player object
+    private User user; // The shared player object
     private boolean buildMode = false;
     private static final int TOWER_COST = 100; // adjust as needed
 
@@ -33,12 +34,12 @@ public class GameManager {
     }
 
     // Player registration
-    public void setPlayer(Player p) {
-        this.player = p;
+    public void setUser(User p) {
+        this.user = p;
     }
 
-    public Player getPlayer() {
-        return this.player;
+    public User getUser() {
+        return this.user;
     }
 
     public void setBuildMode(boolean value) {
@@ -123,13 +124,13 @@ public class GameManager {
                 // Attempt to spawn a tower if player has enough gold
                 float xValue = Float.parseFloat(systemAction.getAttribute("x"));
                 float yValue = Float.parseFloat(systemAction.getAttribute("y"));
-                if (this.player == null) {
+                if (this.user == null) {
                     System.err.println("SpawnTower failed: No player registered.");
                     return;
                 }
-                synchronized (this.player) {
-                    if (this.player.getGold() >= TOWER_COST) {
-                        boolean success = this.player.spendGold(TOWER_COST);
+                synchronized (this.user) {
+                    if (this.user.getGold() >= TOWER_COST) {
+                        boolean success = this.user.spendGold(TOWER_COST);
                         if (success) {
                             spawnObject(new Tower(xValue, yValue, 200, 0f));
                             System.out.println("Tower spawned at (" + xValue + "," + yValue + ")");
@@ -137,13 +138,13 @@ public class GameManager {
                             System.out.println("Tower spawn failed: spendGold returned false.");
                         }
                     } else {
-                        System.out.println("Not enough gold to spawn tower. Required: " + TOWER_COST + ", have: " + this.player.getGold());
+                        System.out.println("Not enough gold to spawn tower. Required: " + TOWER_COST + ", have: " + this.user.getGold());
                     }
                 }
             }
             case "AddGold" -> {
                 int amount = Integer.parseInt(systemAction.getAttribute("amount"));
-                if (this.player != null) this.player.addGold(amount);
+                if (this.user != null) this.user.addGold(amount);
             }
         }
     }

@@ -49,9 +49,9 @@ public class ControlPanel extends JPanel {
         Timer refresh = new Timer(200, new ActionListener(){
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (manager.getPlayer() != null) {
-                    goldLabel.setText("Gold: " + manager.getPlayer().getGold());
-                    scoreLabel.setText("Score: " + manager.getPlayer().getScore());
+                if (manager.getUser() != null) {
+                    goldLabel.setText("Gold: " + manager.getUser().getGold());
+                    scoreLabel.setText("Score: " + manager.getUser().getScore());
                 }
             }
         });
