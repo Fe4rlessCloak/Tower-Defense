@@ -14,25 +14,94 @@ public class Assets {
     // private Map<String, List<BufferedImage>> barbarianAnimations;
     // private Map<String, List<BufferedImage>> skeletonAnimations;
     // Constants matching your folder structure
-    public static final String ANIM_RUN_FORWARD = "runForward";
-    public static final String ANIM_ATTACK_FORWARD = "attackForward";
+    public static final String ANIM_RUN_DOWNWARD = "runDown";
+    public static final String ANIM_RUN_LEFT = "runLeft";
+    public static final String ANIM_RUN_RIGHT = "runRight";
+    public static final String ANIM_RUN_DOWN_LEFT = "runDownLeft";
+    public static final String ANIM_RUN_DOWN_RIGHT = "runDownRight";
+    public static final String ANIM_RUN_TOP = "runTop";
+    public static final String ANIM_RUN_TOP_RIGHT = "runTopRight";
+    public static final String ANIM_RUN_TOP_LEFT = "runTopLeft";
+    
+
+    public static final String ANIM_ATTACK_DOWNWARD = "attackDown";
+    public static final String ANIM_ATTACK_LEFT = "attackLeft";
+    public static final String ANIM_ATTACK_RIGHT = "attackRight";
+    public static final String ANIM_ATTACK_DOWN_LEFT = "attackDownLeft";
+    public static final String ANIM_ATTACK_DOWN_RIGHT = "attackDownRight";
+    public static final String ANIM_ATTACK_TOP = "attackTop";
+    public static final String ANIM_ATTACK_TOP_RIGHT = "attackTopRight";
+    public static final String ANIM_ATTACK_TOP_LEFT = "attackTopLeft";
+
+
+    public static final String ANIM_IDLE_DOWNWARD = "idleDown";
+    public static final String ANIM_IDLE_LEFT = "idleLeft";
+    public static final String ANIM_IDLE_RIGHT = "idleRight";
+    public static final String ANIM_IDLE_DOWN_LEFT = "idleDownLeft";
+    public static final String ANIM_IDLE_DOWN_RIGHT = "idleDownRight";
+    public static final String ANIM_IDLE_TOP = "idleTop";
+    public static final String ANIM_IDLE_TOP_RIGHT = "idleTopRight";
+    public static final String ANIM_IDLE_TOP_LEFT = "idleTopLeft";
+
+
+
     public static final String ANIM_IDLE = "Idle";
     // Add others later: "attackForward", "runLeft", etc.
     
     public Assets() {
         this.gameAssets = new HashMap<>();
-        loadCharacterAssets("Barbarian");
+        loadCharacterAssets("DarkKnight");
+        loadCharacterAssets("Tower");
         loadCharacterAssets("Tower");
     }
     private void loadCharacterAssets(String character){
         switch(character){
-            case "Barbarian" -> {
-                loadAnimation(character, ANIM_RUN_FORWARD, 6);
-                loadAnimation(character, ANIM_ATTACK_FORWARD, 7);
-                loadAnimation(character, ANIM_IDLE, 1);
+            case "DarkKnight" -> {
+                loadAnimation(character, ANIM_RUN_DOWNWARD, 10);
+                loadAnimation(character, ANIM_RUN_LEFT, 8);
+                loadAnimation(character, ANIM_RUN_RIGHT, 8);
+                loadAnimation(character, ANIM_RUN_DOWN_LEFT, 8);
+                loadAnimation(character, ANIM_RUN_DOWN_RIGHT, 8);
+                loadAnimation(character, ANIM_RUN_TOP, 8);
+                loadAnimation(character, ANIM_RUN_TOP_LEFT, 8);
+                loadAnimation(character, ANIM_RUN_TOP_RIGHT, 8);
+
+                loadAnimation(character, ANIM_ATTACK_DOWNWARD, 10);
+                loadAnimation(character, ANIM_ATTACK_LEFT, 9);
+                loadAnimation(character, ANIM_ATTACK_RIGHT, 9);
+                loadAnimation(character, ANIM_ATTACK_DOWN_LEFT, 10);
+                loadAnimation(character, ANIM_ATTACK_DOWN_RIGHT, 10);
+                loadAnimation(character, ANIM_ATTACK_TOP, 9);
+                loadAnimation(character, ANIM_ATTACK_TOP_LEFT, 10);
+                loadAnimation(character, ANIM_ATTACK_TOP_RIGHT, 10);
+
+                loadAnimation(character, ANIM_IDLE_DOWNWARD, 1);
+                loadAnimation(character, ANIM_IDLE_LEFT, 1);
+                loadAnimation(character, ANIM_IDLE_RIGHT, 1);
+                loadAnimation(character, ANIM_IDLE_DOWN_LEFT, 1);
+                loadAnimation(character, ANIM_IDLE_DOWN_RIGHT, 1);
+                loadAnimation(character, ANIM_IDLE_TOP, 1);
+                loadAnimation(character, ANIM_IDLE_TOP_LEFT, 1);
+                loadAnimation(character, ANIM_IDLE_TOP_RIGHT, 1);
             }
             case "Tower" -> {
-                loadAnimation(character, ANIM_IDLE, 1);
+                
+                loadAnimation(character, ANIM_ATTACK_LEFT, 5);
+                loadAnimation(character, ANIM_ATTACK_RIGHT, 5);
+                loadAnimation(character, ANIM_ATTACK_TOP, 5);
+                loadAnimation(character, ANIM_ATTACK_TOP_LEFT, 5);
+                loadAnimation(character, ANIM_ATTACK_TOP_RIGHT, 5);
+                loadAnimation(character, ANIM_ATTACK_DOWNWARD, 5);
+                loadAnimation(character, ANIM_ATTACK_DOWN_LEFT, 5);
+                loadAnimation(character, ANIM_ATTACK_DOWN_RIGHT, 5);
+                loadAnimation(character, ANIM_IDLE_LEFT, 1);
+                loadAnimation(character, ANIM_IDLE_RIGHT, 1);
+                loadAnimation(character, ANIM_IDLE_TOP, 1);
+                loadAnimation(character, ANIM_IDLE_TOP_LEFT, 1);
+                loadAnimation(character, ANIM_IDLE_TOP_RIGHT, 1);
+                loadAnimation(character, ANIM_IDLE_DOWNWARD, 1);
+                loadAnimation(character, ANIM_IDLE_DOWN_LEFT, 1);
+                loadAnimation(character, ANIM_IDLE_DOWN_RIGHT, 1);
             }
             default -> System.err.println("Warning: Attempted to load unknown character type: " + character);
         }

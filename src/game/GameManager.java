@@ -1,9 +1,10 @@
 package game;
 
 
-import game.model.Barbarian;
+import game.model.DarkKnight;
 import game.model.Enemy;
 import game.model.Entity;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -14,6 +15,7 @@ import java.util.Map;
 
 import game.model.GameObject;
 import game.model.Player;
+import game.model.Tower;
 import game.utils.Assets;
 import game.utils.Command;
 import game.utils.CommandBuffer;
@@ -23,7 +25,7 @@ public class GameManager {
     private List<GameObject> objectList;
     private List<GameObject> pendingObjects;
     private CommandBuffer commandBuffer;
-    
+    private boolean reevaluateClosestTarget = false;
     GameManager(Assets mainAssets, CommandBuffer commandBuffer ){
         this.objectList = new ArrayList<GameObject>();
         this.commandBuffer = commandBuffer;
@@ -32,6 +34,7 @@ public class GameManager {
     }
 
     public void update(float deltaTime){
+        
         java.util.Iterator<GameObject> iterator = objectList.iterator(); 
 
         List<Command> pendingCommands = new ArrayList<>(); // A command is represented as: Target, Action, Attributes
@@ -40,7 +43,7 @@ public class GameManager {
         
         Map<String, Command> commandMap = new HashMap<>(); // Creates a hashmap
         for (Command c : pendingCommands) {
-            commandMap.put(c.getTarget(), c); // The hashmap maps Name -> Command (Target, Action, Attributes)
+            commandMap.put(c.getTarget(), c); // The hashmap maps Target -> Command (Target, Action, Attributes)
         }
 
         Command systemAction = commandMap.get("GameManager"); // If any command in the map is intended for the GameManager
@@ -51,6 +54,28 @@ public class GameManager {
         }
         while(iterator.hasNext()){
             GameObject gameObject = iterator.next();
+            if(reevaluateClosestTarget){
+                if(gameObject instanceof Enemy enemy){
+                    setNewPlayerTarget(enemy);
+                    checkToResetToTower(enemy);
+                }else if(gameObject instanceof Player player){
+                    setNewEnemyTarget(player);
+                }
+            }else{
+                if(gameObject instanceof Enemy enemy){ 
+                    if(!enemy.hasValidTarget()){
+                        setNewPlayerTarget(enemy);
+                    }else if(enemy.isTargetingPlayer()){ // Even though the Game Manager is not supposed to micro-manage Enemy's state, here we need a check to see if the enemy should target a Tower or a non-Tower (and get that tower as well)
+                        checkToResetToTower(enemy);
+                    }
+                }
+                if(gameObject instanceof Player player){
+                    if(!player.hasValidTarget()){
+                        setNewEnemyTarget(player);
+                    }
+                }
+            }
+            
             Command currentCommand = commandMap.get(gameObject.getObjectName()); // Fetches Entity related commands for the current entity
             String action = null; // Fetches the specific action from the command object (Target, Action, Attributes)
 
@@ -61,28 +86,21 @@ public class GameManager {
                 gameObject.update(deltaTime, mainAssets, action);
             } else {
                 gameObject.update(deltaTime, mainAssets, null);
-            }
-            if(gameObject instanceof Enemy enemy){ 
                 
-                Player newTarget = null;
-                if(!enemy.hasValidTarget()){   
-                    newTarget = findClosestPlayer(enemy);
-                }
-                if (newTarget != null) {
-                    enemy.setFinalTarget(newTarget); 
-                }
             }
-            if (gameObject instanceof Entity) {
+        
+            if(gameObject instanceof Entity) {
                 Entity entity = (Entity) gameObject;
-                if (!entity.isAlive()) {
+                if (!entity.isAlive() && entity.removalCandidate()) {
+                    
                     iterator.remove(); 
                 }
-            }
-            
-            
+            }         
         }
+        reevaluateClosestTarget = false;
         if(!pendingObjects.isEmpty()){
             objectList.addAll(pendingObjects);
+            reevaluateClosestTarget = true;
             pendingObjects.clear();
         }
     }
@@ -97,30 +115,103 @@ public class GameManager {
             case "SpawnBarbarian" -> {
                 float xValue = Float.parseFloat(systemAction.getAttribute("x"));
                 float yValue = Float.parseFloat(systemAction.getAttribute("y"));
-                spawnObject(new Barbarian(xValue,yValue, 100, 50f, null));
+                spawnObject(new DarkKnight(xValue,yValue));
                 System.out.println("Barbarian Created");
                
             }
         }
-        
+
     }
-    public Player findClosestPlayer(Enemy enemy){
+    public void checkToResetToTower(Enemy enemy){ 
+        Player currentTarget = enemy.getFinalTarget();
+        // Check to see if the current target (non-tower) has gone out of range
+        if (currentTarget != null) {
+            float dx = currentTarget.getX() - enemy.getX();
+            float dy = currentTarget.getY() - enemy.getY();
+            float dist = (float)Math.hypot(dx, dy);
+            if (dist > enemy.getPlayerDetectionRadius()) {
+                // Target out of range -> switch back to default pathing/tower target.
+                enemy.resetTargetPlayer();
+            }
+        }
+    }
+    public void setNewEnemyTarget(Player player){
+        Enemy newEnemyTarget = null;
+        newEnemyTarget = findClosestEnemy(player);
+        if(newEnemyTarget!=null){
+            player.setFinalTarget(newEnemyTarget);
+        }
+    }
+    public void setNewPlayerTarget(Enemy enemy){
+        Player newTarget = null;
+        newTarget = findClosestPlayer(enemy);
+        if(newTarget!=null){
+            if(newTarget instanceof Tower){
+                enemy.setIsTargetingPlayer(false);
+            }else{
+                enemy.setIsTargetingPlayer(true);
+            }
+            enemy.setFinalTarget(newTarget);  
+        }
+    }
+
+    public Enemy findClosestEnemy(Player player){
         java.util.Iterator<GameObject> iterator = objectList.iterator();
-        Player minimumPlayer = null;
+        Enemy minimumEnemy = null;
         float minimumDistance = Float.MAX_VALUE;
         while(iterator.hasNext()){
-            GameObject gameObject = iterator.next(); 
-            if(gameObject instanceof Player){
-                float dx = gameObject.getX() - enemy.getX();
-                float dy = gameObject.getY() - enemy.getY();
+            GameObject gameObject = iterator.next();
+            if(gameObject instanceof Enemy){
+                float dx = gameObject.getX() - player.getX();
+                float dy = gameObject.getY() - player.getY();
                 float dist = (float)Math.hypot(dx, dy);
                 if(dist<minimumDistance){
                     minimumDistance = dist;
-                    minimumPlayer = (Player) gameObject;
+                    minimumEnemy = (Enemy) gameObject;
                 }
+            }
+        }
+        return minimumEnemy;
+    }
+    public Player findClosestPlayer(Enemy enemy){ // If it finds a Player (not a Tower) within a certain radius, it returns that. Else it defaults to the closest Tower
+        java.util.Iterator<GameObject> iterator = objectList.iterator();
+        Player minimumPlayer = null;
+        float minimumPlayerDistance = enemy.getPlayerDetectionRadius();
+        float minimumTowerDistance = Float.MAX_VALUE;
+        boolean isPlayer;
+        Tower defaultTower = null;
+        while(iterator.hasNext()){
+            GameObject gameObject = iterator.next(); 
+            if(gameObject instanceof Player){
+                
+                float dx = gameObject.getX() - enemy.getX();
+                float dy = gameObject.getY() - enemy.getY();
+                float dist = (float)Math.hypot(dx, dy);
+
+                isPlayer = !(gameObject instanceof Tower);
+                if(isPlayer){
+                    if(dist<minimumPlayerDistance){
+                        minimumPlayerDistance = dist;
+                        minimumPlayer = (Player) gameObject;
+                    }
+                }else if(gameObject instanceof Tower){
+                    if(dist<minimumTowerDistance){
+                        minimumTowerDistance = dist;
+                        defaultTower = (Tower) gameObject;
+                    }
+                }
+                
             }
 
         }
-        return minimumPlayer;
+
+        if (minimumPlayer != null) {
+            // Return the closest dynamic Player (Priority 1)
+            return minimumPlayer;
+        } else {
+            // Otherwise, return the closest Tower (Priority 2 fallback)
+            return defaultTower;
+        }
     }
+
 }

@@ -7,11 +7,10 @@ public abstract class GameObject {
     protected final int OBJECT_SIZE = 0;
     protected final int FRAME_OFFSET = 0; 
     boolean isPerformingAction = false; // Default animations dont count
-    private String objectName = null;
-    GameObject(float x, float y, String objectName){
+    protected String objectName = null;
+    GameObject(float x, float y){
         this.x = x;
         this.y = y;
-        this.objectName = objectName;
     }
     GameObject(){
 
@@ -19,7 +18,7 @@ public abstract class GameObject {
     
     public float getX(){return this.x;}
     public float getY(){return this.y;}
-    public abstract void changeCurrentAnimation(String animation);
+    public abstract void changeCurrentAnimation(String animation, boolean forcefulExit);
     public void update(float deltaTime, Assets mainAssets, String action) {
     }
     public String getObjectName(){
