@@ -13,6 +13,7 @@ public class Tower extends Player{
         maxHealth = health;
         objectName = generateName();
         attackDamage = 25;
+        damagePerHit = 25;
         attackFrame = 4;
     }
     

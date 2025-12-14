@@ -8,7 +8,7 @@ import game.utils.Assets;
 
 public abstract class Enemy extends Entity {
     protected List<Point> path;
-
+    
     protected int playerDetectionRadius;
     
     protected Player finalTarget;
@@ -78,7 +78,13 @@ public abstract class Enemy extends Entity {
             if (this.currentAnimation.startsWith("attack") && this.currentFrame == this.attackFrame) { // If the enemy is attacking, and hits frame 8
                 System.out.println("BARBARIAN HIT FRAME 8: Target: " + this.finalTarget.getObjectName() + 
                             " | Health BEFORE: " + this.finalTarget.getHealth());
-                this.finalTarget.takeDamage(50);
+                boolean isCritcial = this.isCritical();
+                if(isCritcial){
+                    this.finalTarget.takeDamage(this.damagePerHit*2, true);
+                }else{
+                    this.finalTarget.takeDamage(this.damagePerHit, false);
+                }
+                
                 this.attackCooldownTimer = ATTACK_RATE_DURATION; // Start cooldown
                 System.out.println("BARBARIAN HIT FRAME 8: Health AFTER: " + this.finalTarget.getHealth());
             }   

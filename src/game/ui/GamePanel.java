@@ -5,6 +5,7 @@ import game.model.GameObject;
 import game.model.Player;
 import game.model.Enemy;
 import game.model.Entity;
+import game.model.Entity.FloatingText;
 import game.utils.Assets;
 import game.utils.Command;
 import game.utils.CommandBuffer;
@@ -12,6 +13,7 @@ import game.utils.CommandBuffer;
 import javax.swing.JPanel;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.AlphaComposite;
@@ -22,6 +24,7 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseEvent;
 import javax.imageio.ImageIO;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -158,7 +161,7 @@ public class GamePanel extends JPanel implements MouseListener {
                 float currentHealthRatio = (float)entity.getHealth() / entity.getMaxHealth();
                 
                 int healthBarFill = (int)(barWidth * currentHealthRatio);
-
+                
                 // 2. Draw the background/empty bar (e.g., black)
                 g2d.setColor(Color.BLACK);
                 g2d.setComposite(AlphaComposite.SrcAtop.derive(0.5f));
@@ -181,43 +184,123 @@ public class GamePanel extends JPanel implements MouseListener {
                 g2d.setColor(Color.WHITE);
                 g2d.drawRect(drawX, barY, barWidth, barHeight);
             }
-            if (entity != null && entity.getFloatingTextTimer() > 0) {
-    
-                // Calculate the Y offset to make it float upward over its lifespan
-                float totalRiseDistance = 40f; // Pixels to float
-                float elapsedRatio = 1.0f - (entity.getFloatingTextTimer() / entity.getTextLifespan());
-                int yOffset = (int)(totalRiseDistance * elapsedRatio);
-                
-                String display = String.valueOf(entity.getLastDamageDealth());
-                
-                // Calculate Opacity (fade during the last 0.2s, for example)
-                opacity = entity.getFloatingTextTimer() / 0.2f;
-                if (opacity > 1.0f) opacity = 1.0f;
-                if (opacity < 0.0f) opacity = 0.0f;
+            if (entity != null) {
+                ArrayList<FloatingText> textsToRender;
+                synchronized(entity.getActiveTexts()){
+                    textsToRender = new java.util.ArrayList<>(entity.getActiveTexts());
+                }
+                for (FloatingText text : textsToRender) { // Access the list
+                    opacity = text.getOpacity();
+                    g2d.setComposite(AlphaComposite.SrcOver.derive(opacity));
+                    int yOffset = (int)text.currentYOffset;
+                    if (text.isCritical) {
+                            // --- 1. SETUP: FONTS AND COLORS ---
+            
+                            String displayDamage = String.valueOf(text.damageValue);
+                            String displayCrit = "CRITICAL!";
 
-                // Set the drawing environment
-                g2d.setColor(Color.YELLOW);
-                g2d.setFont(new Font("Arial", Font.BOLD, 18)); 
-                
-                originalComposite = g2d.getComposite();
-                g2d.setComposite(AlphaComposite.SrcOver.derive(opacity));
+                            // Define fonts for measurement
+                            Font damageFont = new Font("Arial", Font.BOLD, 18);
+                            Font critFont = new Font("Arial", Font.BOLD, 22);
 
-                // Draw the text (Position is above the entity center, offset by the float distance)
-                g2d.drawString(display, 
-                            drawX + frameW/2 - g2d.getFontMetrics().stringWidth(display) / 2, 
-                            drawY - yOffset - 25); // 25 is a fixed distance above the entity
+                            // Get font metrics for accurate width/height
+                            // NOTE: You must set the font first to get its metrics
+                            g2d.setFont(damageFont); 
+                            FontMetrics fmDamage = g2d.getFontMetrics();
+                            g2d.setFont(critFont); 
+                            FontMetrics fmCrit = g2d.getFontMetrics();
+
+                            // NEW COLOR DEFINITIONS
+                            Color MAIN_CRIT_COLOR = new Color(255, 153, 0);  // Bright Orange/Gold
+                            Color CRIT_TEXT_COLOR = new Color(255, 230, 0);  // Neon Yellow
+                            Color OUTLINE_COLOR = new Color(150, 0, 0);       // Dark Red Outline
                             
-                g2d.setComposite(originalComposite);
+                            int outlineOffset = 2; // Pixel offset for the outline shadow
+                            
+                            // --- 2. ALIGNMENT CALCULATIONS (Creating the necessary variables) ---
+                            
+                            // Calculate widths
+                            int damageWidth = fmDamage.stringWidth(displayDamage);
+                            int critWidth = fmCrit.stringWidth(displayCrit);
+                            int maxWidth = Math.max(damageWidth, critWidth);
+
+                            // Calculate heights
+                            int lineHeightDamage = fmDamage.getHeight();
+                            int lineHeightCrit = fmCrit.getHeight();
+                            int totalHeight = lineHeightDamage + lineHeightCrit; 
+
+                            // Define the Center Anchor Point
+                            int anchorX = drawX + frameW / 2;
+                            int baseAnchorY = drawY - yOffset - 40; 
+
+                            // Calculate the TOP-LEFT starting point for the whole block
+                            int startDrawY = baseAnchorY - totalHeight / 2;
+
+                            // Calculate the centered Draw X for each line
+                            int damageDrawX = anchorX - damageWidth / 2;
+                            int critDrawX = anchorX - critWidth / 2;
+                            
+                            // Calculate the centered Draw Y for each line
+                            int damageDrawY = startDrawY + lineHeightDamage;
+                            int critDrawY = damageDrawY + lineHeightCrit; 
+
+                            
+                            // --- 3. DRAW SHADOW/OUTLINE FIRST ---
+                            
+                            // CRITICAL TEXT SHADOW
+                            g2d.setFont(critFont);
+                            g2d.setColor(OUTLINE_COLOR);
+                            g2d.drawString(displayCrit, critDrawX + outlineOffset, critDrawY + outlineOffset);
+                            
+                            // DAMAGE NUMBER SHADOW
+                            g2d.setFont(damageFont);
+                            g2d.setColor(OUTLINE_COLOR);
+                            g2d.drawString(displayDamage, damageDrawX + outlineOffset, damageDrawY + outlineOffset);
+
+
+                            // --- 4. DRAW MAIN TEXT ON TOP ---
+                            
+                            // CRITICAL TEXT MAIN
+                            g2d.setFont(critFont);
+                            g2d.setColor(CRIT_TEXT_COLOR);
+                            g2d.drawString(displayCrit, critDrawX, critDrawY);
+                            
+                            // DAMAGE NUMBER MAIN
+                            g2d.setFont(damageFont);
+                            g2d.setColor(MAIN_CRIT_COLOR);
+                            g2d.drawString(displayDamage, damageDrawX, damageDrawY);
+                        
+                    } else {
+                        String display = String.valueOf(text.damageValue);
+                        
+                        // Calculate Opacity and Position
+                        opacity = text.getOpacity();
+                        yOffset = (int)text.currentYOffset;
+
+                        // Set the drawing environment
+                        g2d.setColor(text.isCritical ? Color.RED : Color.YELLOW);
+                        g2d.setFont(new Font("Arial", Font.BOLD, 18)); 
+                        
+                        originalComposite = g2d.getComposite();
+                        g2d.setComposite(AlphaComposite.SrcOver.derive(opacity));
+
+                        // Draw the text (Position is above the entity center, offset by the float distance)
+                        g2d.drawString(display, 
+                                    drawX + frameW/2 - g2d.getFontMetrics().stringWidth(display) / 2, 
+                                    drawY - yOffset - 25);
+                        
+                                    
+                        g2d.setComposite(originalComposite);
+                    }
+                
             }
             // --- E. Final Cleanup (CRITICAL) ---
             // Restore the composite back to the original (full opacity 1.0f) 
             g2d.setComposite(originalComposite);
             
-
-                
+        }
         }
     }
-
     // Called by Member A's Logic Thread (MainThread.java)
     public void repaintGame() {
         this.repaint();

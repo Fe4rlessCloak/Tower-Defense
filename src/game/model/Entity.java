@@ -1,8 +1,14 @@
 package game.model;
 
+import java.util.Random;
+
 import game.utils.Assets;
 
 public abstract class Entity extends GameObject {
+    private final java.util.List<FloatingText> activeTexts = new java.util.concurrent.CopyOnWriteArrayList<>();
+    private static final Random RNG = new Random();
+    private static final float CRIT_CHANCE = 0.20f; // Can be overridden
+    protected int damagePerHit; // Override
     protected int health;
     protected float speed;
     protected int OBJECT_SIZE = 96;
@@ -21,12 +27,11 @@ public abstract class Entity extends GameObject {
     protected float damageFlashTimer = 0.0f;
     private static final float FLASH_DURATION = 0.15f;
 
-    protected int lastDamageDealt = 0;
-    protected float floatingTextTimer = 0.0f;
-    private static final float TEXT_LIFESPAN = 1.2f; // Time text stays visible
+
 
     protected int maxHealth;
     protected boolean aliveStatus = true;
+    protected
     
     Entity(float x, float y){
         super(x, y);
@@ -37,12 +42,13 @@ public abstract class Entity extends GameObject {
         
     }
     
-    public void takeDamage(int damage){
+    public void takeDamage(int damage, boolean hasTakenCritical){
         this.health = this.health - damage;
         System.out.println("Current Health:" + this.health);
         this.damageFlashTimer = FLASH_DURATION;
-        this.lastDamageDealt = damage;
-        this.floatingTextTimer = TEXT_LIFESPAN; 
+        synchronized (this.activeTexts) {
+            this.activeTexts.add(new FloatingText(damage, hasTakenCritical));
+        }
     }
     
     public boolean isAlive(){
@@ -75,6 +81,9 @@ public abstract class Entity extends GameObject {
     public int getHealth(){
         return this.health;
     }
+    public java.util.List<FloatingText> getActiveTexts() {
+        return this.activeTexts;
+    }
     @Override
     public void update(float deltaTime, Assets mainAssets, String action) {
         if(this.damageFlashTimer > 0) {
@@ -83,11 +92,20 @@ public abstract class Entity extends GameObject {
         if (this.damageFlashTimer <= 0) {
             this.damageFlashTimer = 0.0f;
         }
-        if (this.floatingTextTimer > 0) {
-            this.floatingTextTimer -= deltaTime;
-        }
-        if (this.floatingTextTimer < 0) {
-            this.floatingTextTimer = 0.0f;
+         for (int i = this.activeTexts.size() - 1; i >= 0; i--) {
+            // Get the element at the current index 'i'
+            FloatingText text = this.activeTexts.get(i);
+            
+            // 1. Update the position and timer
+            text.update(deltaTime);
+            
+            // 2. Check for expiration
+            if (text.isExpired()) {
+                // Remove the text using its index.
+                // We iterate backward to ensure that removing an item does not
+                // skip the next item in the list.
+                this.activeTexts.remove(i); 
+            }
         }
        if (!isAlive() && this.damageFlashTimer == 0.0f) {
             // This handles the transition and the fade countdown
@@ -140,13 +158,59 @@ public abstract class Entity extends GameObject {
     public int getMaxHealth() {
         return this.maxHealth;
     }
-    public int getLastDamageDealth(){
-        return this.lastDamageDealt;
+
+    
+    public boolean isCritical(){
+        float roll = RNG.nextFloat(); 
+        
+        
+        if (roll <= CRIT_CHANCE) {
+            
+            return true;
+        } else {
+            
+            return false;
+        }
     }
-    public float getFloatingTextTimer(){
-        return this.floatingTextTimer;
+    public int getDamagePerHit(){
+        return this.damagePerHit;
     }
-    public float getTextLifespan(){
-        return this.TEXT_LIFESPAN;
+   
+    public static class FloatingText {
+        public final int damageValue;
+        public float lifeTimer;
+        public float currentYOffset; // How far up from the starting point it has moved
+        public final boolean isCritical;
+        
+        private static final float LIFESPAN = 1.2f;
+        private static final float VERTICAL_SPEED = 80.0f; 
+
+        public FloatingText(int damage, boolean isCrit) {
+            this.damageValue = damage;
+            this.isCritical = isCrit;
+            this.lifeTimer = LIFESPAN;
+            this.currentYOffset = 0.0f;
+        }
+        
+        public void update(float deltaTime) {
+            this.lifeTimer -= deltaTime;
+            // Move the text upward over time
+            this.currentYOffset += VERTICAL_SPEED * deltaTime;
+        }
+        
+        public float getOpacity() {
+            float fadeDuration = 0.2f; 
+            if (lifeTimer <= 0.0f) { // <-- FIX 1: If the text is dead, opacity must be zero
+                return 0.0f;
+            }
+            if (lifeTimer < fadeDuration) {
+                return lifeTimer / fadeDuration;
+            }
+            return 1.0f;
+        }
+        
+        public boolean isExpired() {
+            return lifeTimer <= 0;
+        }
     }
 }

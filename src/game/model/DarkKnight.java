@@ -12,6 +12,7 @@ public class DarkKnight extends Enemy {
         health = 100;
         maxHealth = health;
         speed = 30F;
+        damagePerHit = 50;
         objectName = generateName();
         attackFrame = 5;
     }
