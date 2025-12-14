@@ -1,6 +1,5 @@
 package game;
 
-
 import game.model.Barbarian;
 import game.model.Enemy;
 import game.model.Entity;
@@ -9,11 +8,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-
-
-
 import game.model.GameObject;
 import game.model.Player;
+import game.model.Tower;
 import game.utils.Assets;
 import game.utils.Command;
 import game.utils.CommandBuffer;
@@ -23,103 +20,149 @@ public class GameManager {
     private List<GameObject> objectList;
     private List<GameObject> pendingObjects;
     private CommandBuffer commandBuffer;
-    
-    GameManager(Assets mainAssets, CommandBuffer commandBuffer ){
+
+    private Player player; // The shared player object
+    private boolean buildMode = false;
+    private static final int TOWER_COST = 100; // adjust as needed
+
+    GameManager(Assets mainAssets, CommandBuffer commandBuffer) {
         this.objectList = new ArrayList<GameObject>();
         this.commandBuffer = commandBuffer;
         this.mainAssets = mainAssets;
         this.pendingObjects = new ArrayList<>();
     }
 
-    public void update(float deltaTime){
-        java.util.Iterator<GameObject> iterator = objectList.iterator(); 
+    // Player registration
+    public void setPlayer(Player p) {
+        this.player = p;
+    }
 
-        List<Command> pendingCommands = new ArrayList<>(); // A command is represented as: Target, Action, Attributes
-        commandBuffer.drainTo(pendingCommands); // Drains the commandBuffer (containing commands) to an Array-List each tick
+    public Player getPlayer() {
+        return this.player;
+    }
 
-        
-        Map<String, Command> commandMap = new HashMap<>(); // Creates a hashmap
+    public void setBuildMode(boolean value) {
+        this.buildMode = value;
+    }
+
+    public boolean isBuildMode() {
+        return this.buildMode;
+    }
+
+    public void update(float deltaTime) {
+        java.util.Iterator<GameObject> iterator = objectList.iterator();
+
+        List<Command> pendingCommands = new ArrayList<>();
+        commandBuffer.drainTo(pendingCommands);
+
+        Map<String, Command> commandMap = new HashMap<>();
         for (Command c : pendingCommands) {
-            commandMap.put(c.getTarget(), c); // The hashmap maps Name -> Command (Target, Action, Attributes)
+            commandMap.put(c.getTarget(), c);
         }
 
-        Command systemAction = commandMap.get("GameManager"); // If any command in the map is intended for the GameManager
+        Command systemAction = commandMap.get("GameManager");
 
         if (systemAction != null) {
-            this.handleSystemAction(systemAction);  // Assuming we have a command for the GameManager, it forwards it
-            commandMap.remove("GameManager"); // Remove the GameManager/System-intended command, so it doesn't try to update a GameObject
+            this.handleSystemAction(systemAction);
+            commandMap.remove("GameManager");
         }
-        while(iterator.hasNext()){
-            GameObject gameObject = iterator.next();
-            Command currentCommand = commandMap.get(gameObject.getObjectName()); // Fetches Entity related commands for the current entity
-            String action = null; // Fetches the specific action from the command object (Target, Action, Attributes)
 
-            if(currentCommand!=null){ // Determines if there's a command enqueued for the current entity
-                action = currentCommand.getAction(); // Fetches that command action (String)
+        while (iterator.hasNext()) {
+            GameObject gameObject = iterator.next();
+            Command currentCommand = commandMap.get(gameObject.getObjectName());
+            String action = null;
+
+            if (currentCommand != null) {
+                action = currentCommand.getAction();
             }
-            if(action!=null){
+            if (action != null) {
                 gameObject.update(deltaTime, mainAssets, action);
             } else {
                 gameObject.update(deltaTime, mainAssets, null);
             }
-            if(gameObject instanceof Enemy enemy){ 
-                
+
+            if (gameObject instanceof Enemy enemy) {
                 Player newTarget = null;
-                if(!enemy.hasValidTarget()){   
+                if (!enemy.hasValidTarget()) {
                     newTarget = findClosestPlayer(enemy);
                 }
                 if (newTarget != null) {
-                    enemy.setFinalTarget(newTarget); 
+                    enemy.setFinalTarget(newTarget);
                 }
             }
             if (gameObject instanceof Entity) {
                 Entity entity = (Entity) gameObject;
                 if (!entity.isAlive()) {
-                    iterator.remove(); 
+                    iterator.remove();
                 }
             }
-            
-            
         }
-        if(!pendingObjects.isEmpty()){
+        if (!pendingObjects.isEmpty()) {
             objectList.addAll(pendingObjects);
             pendingObjects.clear();
         }
     }
-    public void spawnObject(GameObject toAdd){
-        pendingObjects.add(toAdd); // We add new objects to a pending list, which is dumped into the actual game object list in the next tick.
+
+    public void spawnObject(GameObject toAdd) {
+        pendingObjects.add(toAdd);
     }
-    public List<GameObject> getGameObjects(){
+
+    public List<GameObject> getGameObjects() {
         return List.copyOf(this.objectList);
     }
-    private void handleSystemAction(Command systemAction){
-        switch (systemAction.getAction()){
+
+    private void handleSystemAction(Command systemAction) {
+        switch (systemAction.getAction()) {
             case "SpawnBarbarian" -> {
                 float xValue = Float.parseFloat(systemAction.getAttribute("x"));
                 float yValue = Float.parseFloat(systemAction.getAttribute("y"));
-                spawnObject(new Barbarian(xValue,yValue, 100, 50f, null));
+                spawnObject(new Barbarian(xValue, yValue, 100, 50f, null));
                 System.out.println("Barbarian Created");
-               
+            }
+            case "SpawnTower" -> {
+                // Attempt to spawn a tower if player has enough gold
+                float xValue = Float.parseFloat(systemAction.getAttribute("x"));
+                float yValue = Float.parseFloat(systemAction.getAttribute("y"));
+                if (this.player == null) {
+                    System.err.println("SpawnTower failed: No player registered.");
+                    return;
+                }
+                synchronized (this.player) {
+                    if (this.player.getGold() >= TOWER_COST) {
+                        boolean success = this.player.spendGold(TOWER_COST);
+                        if (success) {
+                            spawnObject(new Tower(xValue, yValue, 200, 0f));
+                            System.out.println("Tower spawned at (" + xValue + "," + yValue + ")");
+                        } else {
+                            System.out.println("Tower spawn failed: spendGold returned false.");
+                        }
+                    } else {
+                        System.out.println("Not enough gold to spawn tower. Required: " + TOWER_COST + ", have: " + this.player.getGold());
+                    }
+                }
+            }
+            case "AddGold" -> {
+                int amount = Integer.parseInt(systemAction.getAttribute("amount"));
+                if (this.player != null) this.player.addGold(amount);
             }
         }
-        
     }
-    public Player findClosestPlayer(Enemy enemy){
+
+    public Player findClosestPlayer(Enemy enemy) {
         java.util.Iterator<GameObject> iterator = objectList.iterator();
         Player minimumPlayer = null;
         float minimumDistance = Float.MAX_VALUE;
-        while(iterator.hasNext()){
-            GameObject gameObject = iterator.next(); 
-            if(gameObject instanceof Player){
+        while (iterator.hasNext()) {
+            GameObject gameObject = iterator.next();
+            if (gameObject instanceof Player) {
                 float dx = gameObject.getX() - enemy.getX();
                 float dy = gameObject.getY() - enemy.getY();
-                float dist = (float)Math.hypot(dx, dy);
-                if(dist<minimumDistance){
+                float dist = (float) Math.hypot(dx, dy);
+                if (dist < minimumDistance) {
                     minimumDistance = dist;
                     minimumPlayer = (Player) gameObject;
                 }
             }
-
         }
         return minimumPlayer;
     }

@@ -11,8 +11,8 @@ public class GameFrame extends JFrame {
     
     private GamePanel gamePanel;
     private ControlPanel controlPanel;
-        private ExecutorService producerExecutor;
-        private CommandBuffer commandBuffer;
+    private ExecutorService producerExecutor;
+    private CommandBuffer commandBuffer;
     public GameFrame(GameManager manager, ExecutorService producerExecutor,CommandBuffer commandBuffer ) {
         this.producerExecutor = producerExecutor;
         this.commandBuffer = commandBuffer;
@@ -23,7 +23,8 @@ public class GameFrame extends JFrame {
 
         // Create Panels
         gamePanel = new GamePanel(manager,producerExecutor,commandBuffer);
-        controlPanel = new ControlPanel();
+        controlPanel = new ControlPanel(manager);
+
 
         // Add Panels to Window
         this.add(gamePanel, BorderLayout.CENTER);

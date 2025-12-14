@@ -3,6 +3,7 @@ package game;
 import game.model.Barbarian;
 import game.model.Entity;
 import game.model.GameObject;
+import game.model.Player;
 import game.model.Tower;
 import game.ui.GameFrame;
 import game.ui.GamePanel;
@@ -29,6 +30,15 @@ public class MainClass {
         Assets mainAssets = new Assets();
         GameManager mainGame = new GameManager(mainAssets,commandBuffer);
         
+
+        // Create Player and register
+        Player mainPlayer = new Player(250f, 350f, 500, 0f, "PlayerMain");
+        mainPlayer.addGold(300); // starting gold for testing
+        mainGame.setPlayer(mainPlayer);
+        mainGame.spawnObject(mainPlayer);
+
+
+
         // 2. Spawn a Test Object (Barbarian at 50,200 with 100HP and speed 100)
         GameObject barbarian = new Barbarian(90f, 100f, 100, 50f, null);
         GameObject tower = new Tower(90f, 350f, 200, 50f);
